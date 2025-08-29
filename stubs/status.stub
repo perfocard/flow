@@ -4,8 +4,8 @@ namespace {{ namespace }};
 
 use Perfocard\Flow\Contracts\ShouldBeDefibrillated;
 use Perfocard\Flow\Contracts\ShouldDispatchEvents;
-use Webfox\LaravelBackedEnums\BackedEnum;
-use Webfox\LaravelBackedEnums\IsBackedEnum;
+use Perfocard\Flow\Contracts\BackedEnum;
+use Perfocard\Flow\Traits\IsBackedEnum;
 
 enum {{ class }}: int implements BackedEnum, ShouldBeDefibrillated, ShouldDispatchEvents
 {
