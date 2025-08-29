@@ -1,0 +1,39 @@
+<?php
+
+namespace {{ namespace }};
+
+use Perfocard\Flow\Models\BaseModel;
+use Perfocard\Flow\Contracts\ShouldCollectStatus;
+
+class {{ class }} extends BaseModel implements ShouldCollectStatus
+{
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'status',
+    ];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return array_merge(parent::casts(), [
+            //
+        ]);
+    }
+
+    /**
+     * The model's default values for attributes.
+     *
+     * @var array
+     */
+    protected $attributes = [
+        //
+    ];
+}

@@ -36,8 +36,10 @@ class FlowServiceProvider extends ServiceProvider
                 __DIR__.'/../stubs/nova/resource.stub' => base_path('stubs/nova/resource.stub'),
                 __DIR__.'/../stubs/event.stub' => base_path('stubs/event.stub'),
                 __DIR__.'/../stubs/enum.stub' => base_path('stubs/enum.stub'),
-                __DIR__.'/../stubs/listener.queued.stub' => base_path('stubs/istener.queued.stub'),
+                __DIR__.'/../stubs/listener.queued.stub' => base_path('stubs/listener.queued.stub'),
+                __DIR__.'/../stubs/listener.typed.queued.stub' => base_path('stubs/listener.typed.queued.stub'),
                 __DIR__.'/../stubs/status.stub' => base_path('stubs/status.stub'),
+                __DIR__.'/../stubs/model.stub' => base_path('stubs/model.stub'),
             ], 'stubs');
 
             $this->publishes([

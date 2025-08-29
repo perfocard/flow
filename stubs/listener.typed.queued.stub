@@ -1,0 +1,39 @@
+<?php
+
+namespace {{ namespace }};
+
+use {{ eventNamespace }};
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
+use Perfocard\Flow\Listeners\ThrowableListener;
+use Throwable;
+
+class {{ class }} extends ThrowableListener implements ShouldQueue
+{
+    use InteractsWithQueue;
+
+    public $queue = 'default';
+
+    /**
+     * Handle the event.
+     */
+    public function handle({{ event }} $event): void
+    {
+        //
+    }
+
+    /**
+     * Handle a job failure.
+     */
+    public function failed({{ event }} $event, Throwable $exception): void
+    {
+        // parent::saveException(
+        //     event: $event,
+        //     key: // Provide the key to the actual property name that holds the model in the event
+        //     status: // Provide the appropriate BackedEnum status value for failure
+        //     exception: $exception,
+        // );
+
+        throw $exception;
+    }
+}
