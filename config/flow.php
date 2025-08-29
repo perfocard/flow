@@ -32,10 +32,17 @@ return [
     */
     'compression' => [
         'disk' => [
+            // WARNING: Do NOT use the same disk for both 'remote' and 'temp'.
+            // If both point to the same disk the temporary archive will be removed
+            // during the cleanup step, leaving no archive available. Use distinct
+            // disks for 'temp' and 'remote'.
+
             // Disk for storing compressed files
-            'remote' => env('FLOW_COMPRESSION_DISK_REMOTE', 'local'),
+            'remote' => env('FLOW_COMPRESSION_DISK_REMOTE', 's3'),
+
             // Disk for storing temporary files during compression
             'temp' => env('FLOW_COMPRESSION_DISK_TMP', 'local'),
+
         ],
 
         // Compression timeout in minutes
