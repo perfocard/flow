@@ -1,0 +1,33 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create(config('flow.status.table'), function (Blueprint $table) {
+            $table->id();
+            $table->unsignedTinyInteger('status');
+            $table->text('payload')->nullable();
+            $table->foreignId('statusable_id');
+            $table->string('statusable_type');
+            $table->timestamp('compressed_at')->nullable();
+            $table->timestamp('extracted_at')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists(config('flow.status.table'));
+    }
+};

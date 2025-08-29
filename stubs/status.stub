@@ -1,0 +1,74 @@
+<?php
+
+namespace {{ namespace }};
+
+use Perfocard\Flow\Contracts\ShouldBeDefibrillated;
+use Perfocard\Flow\Contracts\ShouldDispatchEvents;
+use Webfox\LaravelBackedEnums\BackedEnum;
+use Webfox\LaravelBackedEnums\IsBackedEnum;
+
+enum {{ class }}: int implements BackedEnum, ShouldBeDefibrillated, ShouldDispatchEvents
+{
+    use IsBackedEnum;
+
+    case QUEUED = 0;
+    case PROCESSING = 1;
+    case ERROR = 2;
+    case COMPLETE = 3;
+
+    /**
+     * Get the displayable label of the status.
+     */
+    public function label(): string
+    {
+        return match ($this) {
+            self::QUEUED => __('Queued'),
+            self::PROCESSING => __('Processing'),
+            self::ERROR => __('Error'),
+            self::COMPLETE => __('Complete'),
+        };
+    }
+
+    /**
+     * Get the loading state of statuses.
+     */
+    public static function loading(): array
+    {
+        return [
+            self::QUEUED,
+            self::PROCESSING,
+        ];
+    }
+
+    /**
+     * Get the failed state of statuses.
+     */
+    public static function failed(): array
+    {
+        return [
+            self::ERROR,
+        ];
+    }
+
+    /**
+     * Get the event list of status.
+     */
+    public function events(): array
+    {
+        return match ($this) {
+            // self::QUEUED => [],
+            default => [],
+        };
+    }
+
+    /**
+     * Get the status for defibrillation.
+     */
+    public function defibrillate(): ?self
+    {
+        return match ($this) {
+            self::ERROR => self::QUEUED,
+            default => null,
+        };
+    }
+}

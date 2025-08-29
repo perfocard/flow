@@ -1,0 +1,10 @@
+<?php
+
+namespace App\Console\Commands;
+
+use Perfocard\Flow\Console\Commands\EnumMakeCommand as PerfocardEnumMakeCommand;
+
+class EnumMakeCommand extends PerfocardEnumMakeCommand
+{
+    //
+}

@@ -1,0 +1,43 @@
+{
+    "name": "perfocard/flow",
+    "description": "Package for Laravel that adds status flow management for Eloquent models with events and listeners (QUEUED, PROCESSING, ERROR, COMPLETE).",
+    "keywords": [
+        "php",
+        "laravel",
+        "eloquent",
+        "workflow",
+        "status",
+        "flow",
+        "events",
+        "queue",
+        "processing"
+    ],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Perfocard",
+            "email": "support@perfocard.dev"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "illuminate/support": "^11.0|^12.0",
+        "webfox/laravel-backed-enums": "^2.3",
+        "laravel/nova": "^5.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Perfocard\\Flow\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Perfocard\\Flow\\FlowServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

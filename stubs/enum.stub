@@ -1,0 +1,23 @@
+<?php
+
+namespace {{ namespace }};
+
+use Perfocard\Flow\Contracts\BackedEnum;
+use Perfocard\Flow\Traits\IsBackedEnum;
+
+enum {{ class }}: int implements BackedEnum
+{
+    use IsBackedEnum;
+
+    case NAME = 0;
+
+    /**
+     * Get the displayable label of the status.
+     */
+    public function label(): string
+    {
+        return match ($this) {
+            self::NAME => __('Name'),
+        };
+    }
+}
