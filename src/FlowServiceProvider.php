@@ -27,6 +27,9 @@ class FlowServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        $this->loadJsonTranslationsFrom(__DIR__.'/../lang');
+        $this->loadJsonTranslationsFrom(lang_path('vendor/flow'));
+
         if ($this->app->runningInConsole()) {
             $this->publishes([
                 __DIR__.'/../config/flow.php' => config_path('flow.php'),
@@ -45,6 +48,10 @@ class FlowServiceProvider extends ServiceProvider
             $this->publishes([
                 __DIR__.'/../publish/EnumMakeCommand.stub' => base_path('app/Console/Commands/EnumMakeCommand.php'),
             ], 'commands');
+
+            $this->publishes([
+                __DIR__.'/../lang' => $this->app->langPath('vendor/flow'),
+            ], 'langs');
 
             // Register console commands
             $this->commands([

@@ -64,7 +64,7 @@ abstract class Resource extends NovaResource
             PurgeResource::make()
                 ->size('sm')
                 ->confirmButtonText(__('Purge Resource'))
-                ->confirmText(__('Are you sure you want to prune this resource?'))
+                ->confirmText(__('Are you sure you want to purge this resource?'))
                 ->canSee(fn ($request) => $this->canBePurged($request))
                 ->sole(),
         ];
