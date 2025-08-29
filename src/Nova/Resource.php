@@ -76,8 +76,7 @@ abstract class Resource extends NovaResource
             return true;
         }
 
-        return $this->resource instanceof ShouldBeDefibrillated
-        and $this->resource->status instanceof ShouldBeDefibrillated
+        return $this->resource->status instanceof ShouldBeDefibrillated
         and $this->resource->status->defibrillate();
     }
 
