@@ -199,4 +199,30 @@ trait IsBackedEnum
 
         return ! $this->isAny($values);
     }
+
+    public static function except(self|iterable $values): array
+    {
+        static::ensureImplementsInterface();
+
+        if (! is_iterable($values)) {
+            $values = [$values];
+        }
+
+        $toExclude = [];
+        foreach ($values as $value) {
+            if ($value instanceof static) {
+                $toExclude[] = $value;
+            } else {
+
+                $toExclude[] = static::from($value);
+            }
+        }
+
+        return array_values(
+            array_filter(
+                static::cases(),
+                fn (self $enum) => ! in_array($enum, $toExclude, true)
+            )
+        );
+    }
 }
