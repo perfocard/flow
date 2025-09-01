@@ -11,6 +11,7 @@ use Perfocard\Flow\Exceptions\ShouldBeDefibrillatedException;
 use Perfocard\Flow\Exceptions\ShouldCollectStatusException;
 use Perfocard\Flow\Exceptions\UndefinedStatusException;
 use Perfocard\Flow\Observers\ModelObserver;
+use Perfocard\Flow\Support\CascadeStatusBuilder;
 use Webfox\LaravelBackedEnums\BackedEnum;
 
 class BaseModel extends Model
@@ -28,6 +29,11 @@ class BaseModel extends Model
             ...$this->fillable,
             'statusPayload',
         ];
+    }
+
+    public function newEloquentBuilder($query)
+    {
+        return new CascadeStatusBuilder($query);
     }
 
     public function statuses(): MorphMany
