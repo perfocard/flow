@@ -22,8 +22,18 @@
   "Defibrillate": "Defibrillieren",
   "Purge Resource": "Ressource bereinigen",
   "Extract Resource": "Ressource wiederherstellen",
-  "Are you sure you want to defibrillate this resource?": "Sind Sie sicher, dass Sie diese Ressource defibrillieren möchten?",
-  "Are you sure you want to compress this resource?": "Sind Sie sicher, dass Sie diese Ressource komprimieren möchten?",
-  "Are you sure you want to extract this resource?": "Sind Sie sicher, dass Sie diese Ressource wiederherstellen möchten?",
-  "Are you sure you want to purge this resource?": "Sind Sie sicher, dass Sie diese Ressource bereinigen möchten?"
+  "No model provided.": "Kein Modell angegeben.",
+  "Defibrillation failed.": "Defibrillation fehlgeschlagen.",
+  "Resource defibrillated.": "Ressource defibrilliert.",
+  "Resource is not restored.": "Ressource wurde nicht wiederhergestellt.",
+  "Purge failed.": "Bereinigung fehlgeschlagen.",
+  "Resource purged.": "Ressource bereinigt.",
+  "Touch failed.": "Berührung fehlgeschlagen.",
+  "Resource touched.": "Ressource berührt.",
+  "Touch": "Berühren",
+  "Are you sure you want to touch this resource? This will update its timestamp, duplicate the current status, and dispatch related events.": "Sind Sie sicher, dass Sie diese Ressource berühren möchten? Dadurch wird der Zeitstempel aktualisiert, der aktuelle Status dupliziert und die zugehörigen Ereignisse ausgelöst.",
+  "Are you sure you want to defibrillate this resource? This will reset its status to the initial state and restart the process.": "Sind Sie sicher, dass Sie diese Ressource defibrillieren möchten? Dadurch wird ihr Status auf den Anfangszustand zurückgesetzt und der Prozess neu gestartet.",
+  "Are you sure you want to compress this resource? The existing payload will be moved from the database to remote storage, written into a file, and archived. You will be able to restore the payload later.": "Sind Sie sicher, dass Sie diese Ressource komprimieren möchten? Die vorhandene Payload wird aus der Datenbank in den entfernten Speicher verschoben, in eine Datei geschrieben und archiviert. Sie können die Payload später wiederherstellen.",
+  "Are you sure you want to extract this resource? The payload will be restored to the database for a limited time and will then be automatically cleared.": "Sind Sie sicher, dass Sie diese Ressource extrahieren möchten? Die Payload wird für begrenzte Zeit in die Datenbank zurückgeschrieben und anschließend automatisch gelöscht.",
+  "Are you sure you want to purge this resource? This will immediately remove the restored payload from the database instead of waiting for automatic cleanup.": "Sind Sie sicher, dass Sie diese Ressource bereinigen möchten? Dadurch wird die wiederhergestellte Payload sofort aus der Datenbank entfernt, anstatt auf die automatische Bereinigung zu warten."
 }

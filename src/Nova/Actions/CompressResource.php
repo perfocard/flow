@@ -2,14 +2,17 @@
 
 namespace Perfocard\Flow\Nova\Actions;
 
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Collection;
 use Laravel\Nova\Actions\Action;
 use Laravel\Nova\Fields\ActionFields;
 use Perfocard\Flow\Compressor;
-use Throwable;
 
-class CompressResource extends Action
+class CompressResource extends Action implements ShouldQueue
 {
+    use Queueable;
+
     public function name(): string
     {
         return __('Compress Resource');
@@ -17,18 +20,6 @@ class CompressResource extends Action
 
     public function handle(ActionFields $fields, Collection $models)
     {
-        $model = $models->first();
-
-        if (! $model) {
-            return Action::danger(__('No model provided.'));
-        }
-
-        try {
-            Compressor::compress($model);
-        } catch (Throwable $e) {
-            return Action::danger(__('Compression failed.'));
-        }
-
-        return Action::message(__('Compressed resource.'));
+        Compressor::compress($models->first());
     }
 }

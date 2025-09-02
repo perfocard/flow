@@ -36,6 +36,6 @@ class TouchResource extends Action
             return Action::danger(__('Touch failed.'));
         }
 
-        return Action::message(__('Touched resource.'));
+        return Action::message(__('Resource touched.'));
     }
 }

@@ -22,8 +22,18 @@
   "Defibrillate": "Defibrylować",
   "Purge Resource": "Oczyść",
   "Extract Resource": "Przywróć",
-  "Are you sure you want to defibrillate this resource?": "Czy na pewno chcesz defibrylować ten zasób?",
-  "Are you sure you want to compress this resource?": "Czy na pewno chcesz skompresować ten zasób?",
-  "Are you sure you want to extract this resource?": "Czy na pewno chcesz przywrócić ten zasób?",
-  "Are you sure you want to purge this resource?": "Czy na pewno chcesz oczyścić ten zasób?"
+  "No model provided.": "Nie podano modelu.",
+  "Defibrillation failed.": "Defibrylacja nie powiodła się.",
+  "Resource defibrillated.": "Zasób został zdefibrylowany.",
+  "Resource is not restored.": "Zasób nie został przywrócony.",
+  "Purge failed.": "Czyszczenie nie powiodło się.",
+  "Resource purged.": "Zasób został wyczyszczony.",
+  "Touch failed.": "Dotknięcie nie powiodło się.",
+  "Resource touched.": "Zasób został dotknięty.",
+  "Touch": "Dotknij",
+  "Are you sure you want to touch this resource? This will update its timestamp, duplicate the current status, and dispatch related events.": "Czy na pewno chcesz dotknąć tego zasobu? Zostanie zaktualizowany jego znacznik czasu, skopiowany bieżący status i wywołane powiązane zdarzenia.",
+  "Are you sure you want to defibrillate this resource? This will reset its status to the initial state and restart the process.": "Czy na pewno chcesz zdefibrylować ten zasób? Jego status zostanie przywrócony do stanu początkowego, a proces uruchomiony ponownie.",
+  "Are you sure you want to compress this resource? The existing payload will be moved from the database to remote storage, written into a file, and archived. You will be able to restore the payload later.": "Czy na pewno chcesz skompresować ten zasób? Istniejący payload zostanie przeniesiony z bazy danych do zdalnego magazynu, zapisany w pliku i zarchiwizowany. Będziesz mógł później przywrócić payload.",
+  "Are you sure you want to extract this resource? The payload will be restored to the database for a limited time and will then be automatically cleared.": "Czy na pewno chcesz wyodrębnić ten zasób? Payload zostanie przywrócony do bazy danych na pewien czas, a następnie automatycznie usunięty.",
+  "Are you sure you want to purge this resource? This will immediately remove the restored payload from the database instead of waiting for automatic cleanup.": "Czy na pewno chcesz wyczyścić ten zasób? Przywrócony payload zostanie natychmiast usunięty z bazy danych zamiast czekać na automatyczne czyszczenie."
 }

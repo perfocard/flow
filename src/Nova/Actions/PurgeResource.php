@@ -34,6 +34,6 @@ class PurgeResource extends Action
             return Action::danger(__('Purge failed.'));
         }
 
-        return Action::message(__('Purged resource.'));
+        return Action::message(__('Resource purged.'));
     }
 }

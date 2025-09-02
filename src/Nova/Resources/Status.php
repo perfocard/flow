@@ -89,8 +89,8 @@ class Status extends Resource
             DateTime::make(__('Updated At'), 'updated_at')->showOnPreview()->hideFromIndex(),
 
             Panel::make(__('Compression'), [
-                DateTime::make(__('Compressed At'))->showOnPreview(),
-                DateTime::make(__('Extracted At'))->showOnPreview(),
+                DateTime::make(__('Compressed At'), 'compressed_at')->showOnPreview(),
+                DateTime::make(__('Extracted At'), 'extracted_at')->showOnPreview(),
             ]),
         ];
     }

@@ -36,6 +36,6 @@ class DefibrillateStatus extends Action
             return Action::danger(__('Defibrillation failed.'));
         }
 
-        return Action::message(__('Defibrillated resource.'));
+        return Action::message(__('Resource defibrillated.'));
     }
 }

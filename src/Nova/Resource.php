@@ -45,35 +45,35 @@ abstract class Resource extends NovaResource
             TouchResource::make()
                 ->size('sm')
                 ->confirmButtonText(__('Touch'))
-                ->confirmText(__('Are you sure you want to touch this resource?'))
+                ->confirmText(__('Are you sure you want to touch this resource? This will update its timestamp, duplicate the current status, and dispatch related events.'))
                 ->canSee(fn ($request) => $this->canBeTouched($request))
                 ->sole(),
 
             DefibrillateStatus::make()
                 ->size('sm')
                 ->confirmButtonText(__('Defibrillate'))
-                ->confirmText(__('Are you sure you want to defibrillate this resource?'))
+                ->confirmText(__('Are you sure you want to defibrillate this resource? This will reset its status to the initial state and restart the process.'))
                 ->canSee(fn ($request) => $this->canBeDefibrillated($request))
                 ->sole(),
 
             CompressResource::make()
                 ->size('sm')
                 ->confirmButtonText(__('Compress Resource'))
-                ->confirmText(__('Are you sure you want to compress this resource?'))
+                ->confirmText(__('Are you sure you want to compress this resource? The existing payload will be moved from the database to remote storage, written into a file, and archived. You will be able to restore the payload later.'))
                 ->canSee(fn ($request) => $this->canBeCompressed($request))
                 ->sole(),
 
             ExtractResource::make()
                 ->size('sm')
                 ->confirmButtonText(__('Extract Resource'))
-                ->confirmText(__('Are you sure you want to extract this resource?'))
+                ->confirmText(__('Are you sure you want to extract this resource? The payload will be restored to the database for a limited time and will then be automatically cleared.'))
                 ->canSee(fn ($request) => $this->canBeExtracted($request))
                 ->sole(),
 
             PurgeResource::make()
                 ->size('sm')
                 ->confirmButtonText(__('Purge Resource'))
-                ->confirmText(__('Are you sure you want to purge this resource?'))
+                ->confirmText(__('Are you sure you want to purge this resource? This will immediately remove the restored payload from the database instead of waiting for automatic cleanup.'))
                 ->canSee(fn ($request) => $this->canBePurged($request))
                 ->sole(),
         ];
@@ -114,9 +114,9 @@ abstract class Resource extends NovaResource
             return true;
         }
 
-        return $this->resource instanceof ShouldBeCompressed
-        and $this->resource->compressed_at
-        and ! $this->resource->extracted_at;
+        return ($this->resource instanceof ShouldBeCompressed)
+        && $this->resource->compressed_at
+        && ! $this->resource->extracted_at;
     }
 
     private function canBePurged($request)
