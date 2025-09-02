@@ -3,6 +3,7 @@
 namespace Perfocard\Flow;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use Perfocard\Flow\Contracts\Endpoint;
 use Perfocard\Flow\Models\FlowModel;
 
@@ -30,10 +31,18 @@ class PendingEndpoint
             payload: json_encode($payload),
         );
 
-        $method = $this->endpoint->method($this->model);
+        $method = Str::upper($this->endpoint->method($this->model));
+
+        $options = [];
+
+        if ($method == 'GET') {
+            $options['query'] = $payload;
+        } else {
+            $options['json'] = $payload;
+        }
 
         $response = Http::withHeaders($this->endpoint->headers($this->model))
-            ->$method($this->endpoint->url($this->model), $payload)
+            ->send($method, $this->endpoint->url($this->model), $options)
             ->throw();
 
         $this->model = $this->endpoint->processResponse($response, $this->model);
@@ -42,6 +51,8 @@ class PendingEndpoint
 
         if (is_null($content)) {
             $content = $response->body();
+        } else {
+            $content = json_encode($content, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         }
 
         $this->model->setStatusAndSave(
