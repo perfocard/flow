@@ -5,6 +5,7 @@ namespace Perfocard\Flow\Traits;
 use const JSON_ERROR_NONE;
 
 use Illuminate\Database\Eloquent\JsonEncodingException;
+use Illuminate\Support\Collection;
 use Illuminate\Validation\Rules\Enum as EnumValidationRule;
 use Perfocard\Flow\Contracts\BackedEnum;
 
@@ -224,5 +225,12 @@ trait IsBackedEnum
                 fn (self $enum) => ! in_array($enum, $toExclude, true)
             )
         );
+    }
+
+    public static function collect(): Collection
+    {
+        static::ensureImplementsInterface();
+
+        return collect(static::cases());
     }
 }
