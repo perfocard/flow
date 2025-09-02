@@ -97,9 +97,9 @@ class {{ class }} extends Resource
      *
      * @return array
      */
-    public function fields(NovaRequest $request)
+    public function filters(NovaRequest $request)
     {
-        return parent::mergeFields([
+        return parent::mergeFilters([
             //
         ]);
     }
