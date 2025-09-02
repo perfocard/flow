@@ -3,13 +3,14 @@
 namespace Perfocard\Flow\Listeners;
 
 use Perfocard\Flow\Contracts\BackedEnum;
+use Perfocard\Flow\Models\FlowModel;
 use Throwable;
 
 class ThrowableListener
 {
-    public static function saveException(object $event, string $key, BackedEnum $status, Throwable $exception): void
+    public static function saveException(FlowModel $resource, BackedEnum $status, Throwable $exception): void
     {
-        $event->{$key}->setStatusAndSave(
+        $resource->setStatusAndSave(
             status: $status,
             payload: json_encode([
                 'exception' => get_class($exception),

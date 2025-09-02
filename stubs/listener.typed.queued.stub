@@ -28,8 +28,7 @@ class {{ class }} extends ThrowableListener implements ShouldQueue
     public function failed({{ event }} $event, Throwable $exception): void
     {
         // parent::saveException(
-        //     event: $event,
-        //     key: // Provide the key to the actual property name that holds the model in the event
+        //     resource: $event->model, // TODO: Change key
         //     status: // Provide the appropriate BackedEnum status value for failure
         //     exception: $exception,
         // );
