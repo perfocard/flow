@@ -4,10 +4,10 @@ namespace Perfocard\Flow\Observers;
 
 use Perfocard\Flow\Contracts\ShouldCollectStatus;
 use Perfocard\Flow\Contracts\ShouldDispatchEvents;
-use Perfocard\Flow\Models\BaseModel;
+use Perfocard\Flow\Models\FlowModel;
 
 /**
- * Observer for BaseModel status changes.
+ * Observer for FlowModel status changes.
  *
  * Dispatches events when model status is created or updated.
  */
@@ -18,7 +18,7 @@ class ModelObserver
      *
      * @return void
      */
-    public function created(BaseModel $model)
+    public function created(FlowModel $model)
     {
         if (! ($model instanceof ShouldCollectStatus) or ! ($model->status instanceof ShouldDispatchEvents)) {
             return;
@@ -32,7 +32,7 @@ class ModelObserver
      *
      * @return void
      */
-    public function updated(BaseModel $model)
+    public function updated(FlowModel $model)
     {
         if (! ($model instanceof ShouldCollectStatus) or ! ($model->status instanceof ShouldDispatchEvents)) {
             return;
@@ -56,7 +56,7 @@ class ModelObserver
      *
      * @return void
      */
-    protected function dispatchEvents(BaseModel $model)
+    protected function dispatchEvents(FlowModel $model)
     {
         foreach ($model->status->events() as $event) {
             $event::dispatch($model);

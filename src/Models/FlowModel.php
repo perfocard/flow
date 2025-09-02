@@ -16,7 +16,7 @@ use Perfocard\Flow\Exceptions\UndefinedStatusException;
 use Perfocard\Flow\Observers\ModelObserver;
 use Perfocard\Flow\Support\CascadeStatusBuilder;
 
-class BaseModel extends Model
+class FlowModel extends Model
 {
     public ?string $__creatingStatusPayload = null;
 

@@ -2,10 +2,10 @@
 
 namespace {{ namespace }};
 
-use Perfocard\Flow\Models\BaseModel;
+use Perfocard\Flow\Models\FlowModel;
 use Perfocard\Flow\Contracts\ShouldCollectStatus;
 
-class {{ class }} extends BaseModel implements ShouldCollectStatus
+class {{ class }} extends FlowModel implements ShouldCollectStatus
 {
     /**
      * The attributes that are mass assignable.

@@ -56,6 +56,8 @@ class FlowServiceProvider extends ServiceProvider
             // Register console commands
             $this->commands([
                 \Perfocard\Flow\Console\Commands\StatusMakeCommand::class,
+                \Perfocard\Flow\Console\Commands\EndpointMakeCommand::class,
+                \Perfocard\Flow\Console\Commands\TaskMakeCommand::class,
                 \Perfocard\Flow\Console\Commands\FlowInstallCommand::class,
                 \Perfocard\Flow\Console\Commands\CompressCommand::class,
                 \Perfocard\Flow\Console\Commands\PurgeCommand::class,

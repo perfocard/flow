@@ -1,0 +1,43 @@
+<?php
+
+namespace {{ namespace }};
+
+{{ statusUse }}use Perfocard\Flow\Contracts\BackedEnum;
+use Perfocard\Flow\Contracts\HandledTask;
+use Perfocard\Flow\Models\FlowModel;
+
+class {{ class }} implements HandledTask
+{
+    /**
+     * Get the status representing the processing state.
+     *
+     * @param  \Perfocard\Flow\Models\FlowModel  $model
+     * @return \Perfocard\Flow\Contracts\BackedEnum
+     */
+    public function processing(FlowModel $model): BackedEnum
+    {
+        {{ statusProcessing }}
+    }
+
+    /**
+     * Get the status representing the completed state.
+     *
+     * @param  \Perfocard\Flow\Models\FlowModel  $model
+     * @return \Perfocard\Flow\Contracts\BackedEnum
+     */
+    public function complete(FlowModel $model): BackedEnum
+    {
+        {{ statusComplete }}
+    }
+
+    /**
+     * Execute the task logic.
+     *
+     * @param  \Perfocard\Flow\Models\FlowModel  $process
+     * @return \Perfocard\Flow\Models\FlowModel
+     */
+    public function handle(FlowModel $model): FlowModel
+    {
+        return $model;
+    }
+}

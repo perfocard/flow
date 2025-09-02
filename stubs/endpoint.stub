@@ -1,0 +1,77 @@
+<?php
+
+namespace {{ namespace }};
+
+{{ statusUse }}use Illuminate\Http\Client\Response;
+use Perfocard\Flow\BaseEndpoint;
+use Perfocard\Flow\Contracts\BackedEnum;
+use Perfocard\Flow\Contracts\Endpoint;
+use Perfocard\Flow\Models\FlowModel;
+
+class {{ class }} extends BaseEndpoint implements Endpoint
+{
+    /**
+     * Get the status representing the processing state.
+     *
+     * @return \Perfocard\Flow\Contracts\BackedEnum
+     */
+    public function processing(): BackedEnum
+    {
+        {{ statusProcessing }}
+    }
+
+    /**
+     * Get the status representing the completed state.
+     *
+     * @return \Perfocard\Flow\Contracts\BackedEnum
+     */
+    public function complete(): BackedEnum
+    {
+        {{ statusComplete }}
+    }
+
+    /**
+     * Determine the HTTP method for the request.
+     *
+     * @param  \Perfocard\Flow\Models\FlowModel  $model
+     * @return string
+     */
+    public function method(FlowModel $model): string
+    {
+        return 'POST';
+    }
+
+    /**
+     * Get the URL to which the request should be sent.
+     *
+     * @param  \Perfocard\Flow\Models\FlowModel  $model
+     * @return string
+     */
+    public function url(FlowModel $model): string
+    {
+        return '';
+    }
+
+    /**
+     * Build the request payload.
+     *
+     * @param  \Perfocard\Flow\Models\FlowModel  $model
+     * @return array<string, mixed>
+     */
+    public function buildPayload(FlowModel $model): array
+    {
+        return [];
+    }
+
+    /**
+     * Process the API response and update the model.
+     *
+     * @param  \Illuminate\Http\Client\Response  $response
+     * @param  \Perfocard\Flow\Models\FlowModel  $model
+     * @return \Perfocard\Flow\Models\FlowModel
+     */
+    public function processResponse(Response $response, FlowModel $model): FlowModel
+    {
+        return $model;
+    }
+}
