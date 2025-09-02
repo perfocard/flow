@@ -16,6 +16,7 @@ use Perfocard\Flow\Nova\Actions\PurgeResource;
 use Perfocard\Flow\Nova\Actions\TouchResource;
 use Perfocard\Flow\Nova\Fields\DateTime;
 use Perfocard\Flow\Nova\Fields\Status;
+use Perfocard\Flow\Nova\Filters\EnumFilter;
 use Perfocard\Flow\Nova\Resources\Status as StatusResource;
 
 abstract class Resource extends NovaResource
@@ -36,6 +37,14 @@ abstract class Resource extends NovaResource
         }
 
         return $fields;
+    }
+
+    public function mergeFilters(array $filters)
+    {
+        return [
+            EnumFilter::make(__('Status'), 'status', get_class($this->resource->status)),
+            ...$filters,
+        ];
     }
 
     public function mergeActions(array $actions)
