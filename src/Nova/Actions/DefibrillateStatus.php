@@ -5,6 +5,7 @@ namespace Perfocard\Flow\Nova\Actions;
 use Illuminate\Support\Collection;
 use Laravel\Nova\Actions\Action;
 use Laravel\Nova\Fields\ActionFields;
+use Throwable;
 
 class DefibrillateStatus extends Action
 {
@@ -23,21 +24,18 @@ class DefibrillateStatus extends Action
      */
     public function handle(ActionFields $fields, Collection $models)
     {
-        $count = 0;
-        $errors = [];
-        foreach ($models as $model) {
-            try {
-                $model->defibrillate();
-                $count++;
-            } catch (\Throwable $e) {
-                $errors[] = $model->getKey();
-            }
+        $model = $models->first();
+
+        if (! $model) {
+            return Action::danger(__('No model provided.'));
         }
 
-        if ($errors) {
-            return Action::danger('Defibrillation failed for IDs: '.implode(', ', $errors));
+        try {
+            $model->defibrillate();
+        } catch (Throwable $e) {
+            return Action::danger(__('Defibrillation failed.'));
         }
 
-        return Action::message("Defibrillated {$count} models.");
+        return Action::message(__('Defibrillated resource.'));
     }
 }

@@ -6,6 +6,7 @@ use Illuminate\Support\Collection;
 use Laravel\Nova\Actions\Action;
 use Laravel\Nova\Fields\ActionFields;
 use Perfocard\Flow\Compressor;
+use Throwable;
 
 class ExtractResource extends Action
 {
@@ -16,16 +17,28 @@ class ExtractResource extends Action
 
     public function handle(ActionFields $fields, Collection $models)
     {
-        $count = 0;
-        foreach ($models as $model) {
-            if ($model->compressed_at && ! $model->extracted_at) {
-                Compressor::extract($model);
-                $model->extracted_at = now();
-                $model->save();
-                $count++;
-            }
+        $model = $models->first();
+
+        if (! $model) {
+            return Action::danger(__('No model provided.'));
         }
 
-        return Action::message("Restored {$count} resources.");
+        if (! $model->compressed_at) {
+            return Action::danger(__('Resource is not compressed.'));
+        }
+
+        if ($model->extracted_at) {
+            return Action::danger(__('Resource has already been restored.'));
+        }
+
+        try {
+            Compressor::extract($model);
+            $model->extracted_at = now();
+            $model->save();
+        } catch (Throwable $e) {
+            return Action::danger(__('Extraction failed.'));
+        }
+
+        return Action::message(__('Restored resource.'));
     }
 }

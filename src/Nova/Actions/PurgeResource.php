@@ -5,6 +5,7 @@ namespace Perfocard\Flow\Nova\Actions;
 use Illuminate\Support\Collection;
 use Laravel\Nova\Actions\Action;
 use Laravel\Nova\Fields\ActionFields;
+use Throwable;
 
 class PurgeResource extends Action
 {
@@ -15,16 +16,24 @@ class PurgeResource extends Action
 
     public function handle(ActionFields $fields, Collection $models)
     {
-        $count = 0;
-        foreach ($models as $model) {
-            if ($model->extracted_at) {
-                $model->payload = null;
-                $model->extracted_at = null;
-                $model->save();
-                $count++;
-            }
+        $model = $models->first();
+
+        if (! $model) {
+            return Action::danger(__('No model provided.'));
         }
 
-        return Action::message("Purged {$count} resources.");
+        if (! $model->extracted_at) {
+            return Action::danger(__('Resource is not restored.'));
+        }
+
+        try {
+            $model->payload = null;
+            $model->extracted_at = null;
+            $model->save();
+        } catch (Throwable $e) {
+            return Action::danger(__('Purge failed.'));
+        }
+
+        return Action::message(__('Purged resource.'));
     }
 }

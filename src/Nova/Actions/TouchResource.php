@@ -5,6 +5,7 @@ namespace Perfocard\Flow\Nova\Actions;
 use Illuminate\Support\Collection;
 use Laravel\Nova\Actions\Action;
 use Laravel\Nova\Fields\ActionFields;
+use Throwable;
 
 class TouchResource extends Action
 {
@@ -23,21 +24,18 @@ class TouchResource extends Action
      */
     public function handle(ActionFields $fields, Collection $models)
     {
-        $count = 0;
-        $errors = [];
-        foreach ($models as $model) {
-            try {
-                $model->touch();
-                $count++;
-            } catch (\Throwable $e) {
-                $errors[] = $model->getKey();
-            }
+        $model = $models->first();
+
+        if (! $model) {
+            return Action::danger(__('No model provided.'));
         }
 
-        if ($errors) {
-            return Action::danger('Touch failed for IDs: '.implode(', ', $errors));
+        try {
+            $model->touch();
+        } catch (Throwable $e) {
+            return Action::danger(__('Touch failed.'));
         }
 
-        return Action::message("Touched {$count} models.");
+        return Action::message(__('Touched resource.'));
     }
 }
