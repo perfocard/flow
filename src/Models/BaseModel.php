@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Support\Facades\DB;
 use Perfocard\Flow\Contracts\ShouldBeDefibrillated;
+use Perfocard\Flow\Contracts\ShouldBeTouched;
 use Perfocard\Flow\Contracts\ShouldCollectStatus;
 use Perfocard\Flow\Exceptions\ShouldBeDefibrillatedException;
 use Perfocard\Flow\Exceptions\ShouldCollectStatusException;
@@ -158,12 +159,19 @@ class BaseModel extends Model
     public function touch($attribute = null): bool
     {
         return DB::transaction(function () use ($attribute) {
-            $this->__forceStatusEvents = true;
+            $shouldForce = ($this instanceof ShouldCollectStatus)
+                && ($this->status instanceof ShouldBeTouched);
+
+            if ($shouldForce) {
+                $this->__forceStatusEvents = true;
+            }
 
             try {
                 return parent::touch($attribute);
             } finally {
-                $this->__forceStatusEvents = false;
+                if ($shouldForce) {
+                    $this->__forceStatusEvents = false;
+                }
             }
         });
     }

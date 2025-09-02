@@ -7,6 +7,7 @@ use Laravel\Nova\Http\Requests\ActionRequest;
 use Laravel\Nova\Resource as NovaResource;
 use Perfocard\Flow\Contracts\ShouldBeCompressed;
 use Perfocard\Flow\Contracts\ShouldBeDefibrillated;
+use Perfocard\Flow\Contracts\ShouldBeTouched;
 use Perfocard\Flow\Contracts\ShouldCollectStatus;
 use Perfocard\Flow\Nova\Actions\CompressResource;
 use Perfocard\Flow\Nova\Actions\DefibrillateStatus;
@@ -41,7 +42,12 @@ abstract class Resource extends NovaResource
     {
         return [
             ...$actions,
-            TouchResource::make(),
+            TouchResource::make()
+                ->size('sm')
+                ->confirmButtonText(__('Touch'))
+                ->confirmText(__('Are you sure you want to touch this resource?'))
+                ->canSee(fn ($request) => $this->canBeTouched($request))
+                ->sole(),
 
             DefibrillateStatus::make()
                 ->size('sm')
@@ -71,6 +77,15 @@ abstract class Resource extends NovaResource
                 ->canSee(fn ($request) => $this->canBePurged($request))
                 ->sole(),
         ];
+    }
+
+    private function canBeTouched($request)
+    {
+        if ($request instanceof ActionRequest) {
+            return true;
+        }
+
+        return $this->resource->status instanceof ShouldBeTouched;
     }
 
     private function canBeDefibrillated($request)
