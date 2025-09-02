@@ -12,6 +12,7 @@ use Perfocard\Flow\Nova\Actions\CompressResource;
 use Perfocard\Flow\Nova\Actions\DefibrillateStatus;
 use Perfocard\Flow\Nova\Actions\ExtractResource;
 use Perfocard\Flow\Nova\Actions\PurgeResource;
+use Perfocard\Flow\Nova\Actions\TouchResource;
 use Perfocard\Flow\Nova\Fields\DateTime;
 use Perfocard\Flow\Nova\Fields\Status;
 use Perfocard\Flow\Nova\Resources\Status as StatusResource;
@@ -40,6 +41,8 @@ abstract class Resource extends NovaResource
     {
         return [
             ...$actions,
+            TouchResource::make(),
+
             DefibrillateStatus::make()
                 ->size('sm')
                 ->confirmButtonText(__('Defibrillate'))

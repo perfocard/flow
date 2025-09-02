@@ -5,6 +5,7 @@ namespace Perfocard\Flow\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Support\Facades\DB;
 use Perfocard\Flow\Contracts\ShouldBeDefibrillated;
 use Perfocard\Flow\Contracts\ShouldCollectStatus;
 use Perfocard\Flow\Exceptions\ShouldBeDefibrillatedException;
@@ -17,6 +18,8 @@ use Webfox\LaravelBackedEnums\BackedEnum;
 class BaseModel extends Model
 {
     public ?string $__creatingStatusPayload = null;
+
+    public bool $__forceStatusEvents = false;
 
     /**
      * Get the fillable attributes for the model.
@@ -97,7 +100,10 @@ class BaseModel extends Model
                     throw new UndefinedStatusException;
                 }
 
-                if ($model->status != $model->getOriginal('status')) {
+                $force = property_exists($model, '__forceStatusEvents') && $model->__forceStatusEvents === true;
+                $changed = $model->status != $model->getOriginal('status');
+
+                if ($force || $changed) {
                     $model->statuses()->create([
                         'status' => $model->status,
                         'payload' => $model->statusPayload,
@@ -147,5 +153,18 @@ class BaseModel extends Model
         $this->save();
 
         return $this;
+    }
+
+    public function touch($attribute = null): bool
+    {
+        return DB::transaction(function () use ($attribute) {
+            $this->__forceStatusEvents = true;
+
+            try {
+                return parent::touch($attribute);
+            } finally {
+                $this->__forceStatusEvents = false;
+            }
+        });
     }
 }

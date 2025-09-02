@@ -38,6 +38,12 @@ class ModelObserver
             return;
         }
 
+        if (property_exists($model, '__forceStatusEvents') && $model->__forceStatusEvents === true) {
+            $this->dispatchEvents($model);
+
+            return;
+        }
+
         if ($model->status == $model->getOriginal('status')) {
             return;
         }
