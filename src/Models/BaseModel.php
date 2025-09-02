@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Support\Facades\DB;
+use Perfocard\Flow\Contracts\BackedEnum;
 use Perfocard\Flow\Contracts\ShouldBeDefibrillated;
 use Perfocard\Flow\Contracts\ShouldBeTouched;
 use Perfocard\Flow\Contracts\ShouldCollectStatus;
@@ -14,7 +15,6 @@ use Perfocard\Flow\Exceptions\ShouldCollectStatusException;
 use Perfocard\Flow\Exceptions\UndefinedStatusException;
 use Perfocard\Flow\Observers\ModelObserver;
 use Perfocard\Flow\Support\CascadeStatusBuilder;
-use Webfox\LaravelBackedEnums\BackedEnum;
 
 class BaseModel extends Model
 {
