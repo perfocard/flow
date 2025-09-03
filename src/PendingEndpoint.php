@@ -28,7 +28,7 @@ class PendingEndpoint
 
         $this->model->setStatusAndSave(
             status: $this->endpoint->processing(),
-            payload: json_encode($payload),
+            payload: json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
         );
 
         $method = Str::upper($this->endpoint->method($this->model));
