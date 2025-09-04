@@ -352,13 +352,13 @@ class ProcessQueuedDocument
 {
     public function handle(DocumentQueued $event): void
     {
-        $event->setStatusAndSave(
+        $event->document->setStatusAndSave(
             status: DocumentStatus::PROCESSING,
         );
 
         $event->document->content = 'Lorem ipsum dolor sit amet.';
 
-        $event->setStatusAndSave(
+        $event->document->setStatusAndSave(
             status: DocumentStatus::COMPLETE,
         );
     }
