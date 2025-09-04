@@ -86,6 +86,7 @@ The package publishes the following stubs:
 - `model.stub`
 - `status.stub`
 - `task.stub`
+- `nova/resource.stub`
 
 ```bash
 php artisan flow:install
