@@ -5,10 +5,9 @@ namespace {{ namespace }};
 {{ statusUse }}use Illuminate\Http\Client\Response;
 use Perfocard\Flow\BaseEndpoint;
 use Perfocard\Flow\Contracts\BackedEnum;
-use Perfocard\Flow\Contracts\Endpoint;
 use Perfocard\Flow\Models\FlowModel;
 
-class {{ class }} extends BaseEndpoint implements Endpoint
+class {{ class }} extends BaseEndpoint
 {
     /**
      * Get the status representing the processing state.
