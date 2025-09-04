@@ -23,9 +23,9 @@ class {{ class }} extends FlowModel implements ShouldCollectStatus
      */
     protected function casts(): array
     {
-        return array_merge(parent::casts(), [
+        return [
             //
-        ]);
+        ];
     }
 
     /**
