@@ -74,7 +74,7 @@ composer require perfocard/flow
 
 ### Run the package installer (publishes config and stubs)
 
-Note: the installer publishes configuration and stub files into your application. If you've previously published any of these stubs, the installer will not overwrite them. Rename or remove the existing stub files in your project before running the installer to allow the package to publish its versions.
+⚠️ Note: the installer publishes configuration and stub files into your application. If you've previously published any of these stubs, the installer will not overwrite them. Rename or remove the existing stub files in your project before running the installer to allow the package to publish its versions.
 
 The package publishes the following stubs:
 
