@@ -449,6 +449,8 @@ class ProcessQueuedDocument
 }
 ```
 
+In this case, the status will be automatically set to `PROCESSING` before the task starts and to `COMPLETE` after it is finishes.
+
 ### 3.9 Using an Endpoint
 
 Another implementation option is to use an Endpoint when document content must be fetched from an external HTTP service. Generate an endpoint class:
@@ -534,6 +536,8 @@ class ProcessQueuedDocument extends ThrowableListener
     }
 }
 ```
+
+In this case, the status will automatically be set to `PROCESSING` before the call and to `COMPLETE` after it finishes. Additionally, the request payload and the response are automatically saved to the `payload` field of the corresponding status record.
 
 ## 4. Laravel Nova integration
 
