@@ -1,5 +1,28 @@
 # Perfocard Flow
 
+Perfocard Flow is a lightweight, extensible package for managing the statuses of business objects and archiving large payloads in Laravel projects.
+
+Overview:
+
+- Centralized enum-based status model and lifecycle management for business objects.
+- Automatic archiving of large payloads to remote storage (ZIP) to reduce database size, with restore and purge capabilities.
+- Integration with Laravel Nova: built-in resources, a status field, actions (Compress / Restore / Purge / Defibrillate) and universal metrics.
+- Support for asynchronous processing via Tasks, Endpoints and queued listeners/jobs; includes stubs for quick setup.
+- Installer that publishes configuration and stubs, plus scheduler commands (`flow:compress`, `flow:purge`).
+
+Benefits:
+
+- Clean architecture for handling long-running and failed processes (defibrillation + events).
+- Reduced database size through payload archiving.
+- Ready-made Nova integration to speed up administrative workflows.
+- Task/Endpoint structure that simplifies testing and scaling.
+
+Use cases:
+
+- When object statuses require complex business flows.
+- When payloads grow large and bloat the database.
+- When interactive administration via Nova is needed.
+
 ## Contents
 
 - [Perfocard Flow](#perfocard-flow)
