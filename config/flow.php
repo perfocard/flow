@@ -41,7 +41,7 @@ return [
             'remote' => env('FLOW_COMPRESSION_DISK_REMOTE', 's3'),
 
             // Disk for storing temporary files during compression
-            'temp' => env('FLOW_COMPRESSION_DISK_TMP', 'local'),
+            'temp' => env('FLOW_COMPRESSION_DISK_TEMP', 'local'),
 
         ],
 
