@@ -1,5 +1,7 @@
 # Perfocard Flow
 
+[![Packagist Version](https://img.shields.io/packagist/v/perfocard/flow.svg)](https://packagist.org/packages/perfocard/flow) [![Packagist Downloads](https://img.shields.io/packagist/dt/perfocard/flow.svg)](https://packagist.org/packages/perfocard/flow) [![License](https://img.shields.io/packagist/l/perfocard/flow.svg)](https://packagist.org/packages/perfocard/flow) [![PHP Version](https://img.shields.io/packagist/php-v/perfocard/flow.svg)](https://packagist.org/packages/perfocard/flow)
+
 Perfocard Flow is a lightweight, extensible package for managing the statuses of business objects and archiving large payloads in Laravel projects.
 
 Overview:
