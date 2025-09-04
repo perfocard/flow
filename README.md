@@ -325,7 +325,7 @@ When a document is created it will dispatch the `DocumentQueued` event. You need
 Run:
 
 ```bash
-php artisan make:listener Document/ProcessQueuedDocument --model=Document --queued
+php artisan make:listener Document/ProcessQueuedDocument --event=DocumentQueued --queued
 ```
 
 This will generate `app/Listeners/Document/ProcessQueuedDocument.php`. The listener will listen for the event and run in the queue. Example implementation:
