@@ -11,6 +11,9 @@ use Laravel\Nova\Panel;
 use Perfocard\Flow\Nova\Fields\DateTime;
 use Perfocard\Flow\Nova\Resource;
 
+/**
+ * @property \Perfocard\Flow\Models\Status $resource
+ */
 class Status extends Resource
 {
     /**
@@ -55,7 +58,7 @@ class Status extends Resource
     /**
      * The model the resource corresponds to.
      *
-     * @var class-string<\App\Models\Status>
+     * @var class-string<\Perfocard\Flow\Models\Status>
      */
     public static $model = \Perfocard\Flow\Models\Status::class;
 
@@ -81,7 +84,10 @@ class Status extends Resource
     public function fields(NovaRequest $request)
     {
         return [
-            Select::make(__('Status'), 'status')->options(fn () => $this->statusable->status->map())->displayUsingLabels()->showOnPreview(),
+            Select::make(__('Status'), 'status')
+                ->options(fn () => $this->resource->statusable->getAttribute('status')->map())
+                ->displayUsingLabels()
+                ->showOnPreview(),
 
             MorphTo::make(__('Resource'), 'statusable')->showOnPreview(),
             Code::make(__('Payload'), 'payload')->language('javascript')->showOnPreview(),

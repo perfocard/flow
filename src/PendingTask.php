@@ -2,19 +2,18 @@
 
 namespace Perfocard\Flow;
 
-use Exception;
-use Illuminate\Database\Eloquent\Model;
 use Perfocard\Flow\Contracts\HandledTask;
+use Perfocard\Flow\Models\FlowModel;
 
 class PendingTask
 {
-    protected ?Model $model = null;
+    protected ?FlowModel $model = null;
 
     public function __construct(
         protected HandledTask $task,
     ) {}
 
-    public function on(Model $model): self
+    public function on(FlowModel $model): self
     {
         $this->model = $model;
 
@@ -23,10 +22,6 @@ class PendingTask
 
     public function dispatch()
     {
-        if ($this->task instanceof HandledTask === false) {
-            throw new Exception('Task must implement HandledTask interface.');
-        }
-
         $this->model->setStatusAndSave(
             status: $this->task->processing($this->model),
         );

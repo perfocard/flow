@@ -16,6 +16,10 @@ use Perfocard\Flow\Exceptions\UndefinedStatusException;
 use Perfocard\Flow\Observers\ModelObserver;
 use Perfocard\Flow\Support\CascadeStatusBuilder;
 
+/**
+ * @property string|null $statusPayload
+ * @property BackedEnum $status
+ */
 class FlowModel extends Model
 {
     public ?string $__creatingStatusPayload = null;
@@ -73,13 +77,13 @@ class FlowModel extends Model
     {
         parent::boot();
 
-        static::creating(function (Model $model) {
+        static::creating(function (FlowModel $model) {
             $model->__creatingStatusPayload = $model->statusPayload;
 
             unset($model->statusPayload);
         });
 
-        static::created(function (Model $model) {
+        static::created(function (FlowModel $model) {
             // Preserving the initial status if the model implements the ShouldCollectStatus interface
             if ($model instanceof ShouldCollectStatus) {
                 if ($model->status === null) {
@@ -93,7 +97,7 @@ class FlowModel extends Model
             }
         });
 
-        static::updating(function (Model $model) {
+        static::updating(function (FlowModel $model) {
             // Saving the new status if it has changed and the model implements the ShouldCollectStatus interface
             if ($model instanceof ShouldCollectStatus) {
 
@@ -101,7 +105,7 @@ class FlowModel extends Model
                     throw new UndefinedStatusException;
                 }
 
-                $force = property_exists($model, '__forceStatusEvents') && $model->__forceStatusEvents === true;
+                $force = $model->__forceStatusEvents === true;
                 $changed = $model->status != $model->getOriginal('status');
 
                 if ($force || $changed) {
@@ -115,7 +119,7 @@ class FlowModel extends Model
             }
         });
 
-        static::deleting(function (Model $model) {
+        static::deleting(function (FlowModel $model) {
             // Removing all statuses if the model implements the ShouldCollectStatus interface
             if ($model instanceof ShouldCollectStatus) {
                 $model->statuses()->delete();
@@ -125,7 +129,7 @@ class FlowModel extends Model
         static::observe(ModelObserver::class);
     }
 
-    public function defibrillate(): ?static
+    public function defibrillate(): self
     {
         if (! ($this instanceof ShouldCollectStatus)) {
             throw new ShouldCollectStatusException;

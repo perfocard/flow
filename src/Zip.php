@@ -37,11 +37,6 @@ class Zip
     private ?ZipArchive $zipArchive = null;
 
     /**
-     * Zip file name.
-     */
-    private ?string $zipFile = null;
-
-    /**
      * Zip file password (for extraction).
      */
     private ?string $password = null;
@@ -253,22 +248,6 @@ class Zip
     public function getArchive(): ?ZipArchive
     {
         return $this->zipArchive;
-    }
-
-    /**
-     * Get current zip file name.
-     */
-    public function getZipFile(): ?string
-    {
-        return $this->zipFile;
-    }
-
-    /**
-     * Get an SplFileObject for the zip file.
-     */
-    public function getFileObject(): \SplFileObject
-    {
-        return new \SplFileObject($this->zipFile);
     }
 
     /**

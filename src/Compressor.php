@@ -27,7 +27,7 @@ class Compressor
 
     protected static function getPayloadFilePath(Status $status): string
     {
-        return $status->created_at->format('Y/m/d_').$status->statusable->id.$status->created_at->format('_Y_m_d').'.txt';
+        return $status->created_at->format('Y/m/d_').$status->statusable->getKey().$status->created_at->format('_Y_m_d').'.txt';
     }
 
     public static function compress(Status $status): Status

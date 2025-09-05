@@ -38,7 +38,7 @@ class ModelObserver
             return;
         }
 
-        if (property_exists($model, '__forceStatusEvents') && $model->__forceStatusEvents === true) {
+        if ($model->__forceStatusEvents === true) {
             $this->dispatchEvents($model);
 
             return;
@@ -58,8 +58,10 @@ class ModelObserver
      */
     protected function dispatchEvents(FlowModel $model)
     {
-        foreach ($model->status->events() as $event) {
-            $event::dispatch($model);
+        if ($model->status instanceof ShouldDispatchEvents) {
+            foreach ($model->status->events() as $event) {
+                $event::dispatch($model);
+            }
         }
     }
 }

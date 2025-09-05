@@ -34,7 +34,7 @@ class ItemsByEnum extends Partition
     {
         return $this->count($request, $this->modelClass::orderBy('aggregate', 'desc'), $this->enumColumn)
             ->label(function ($value) {
-                if (is_null($value)) {
+                if (empty($value)) {
                     return __('Undefined');
                 }
 

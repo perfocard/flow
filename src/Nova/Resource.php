@@ -19,6 +19,9 @@ use Perfocard\Flow\Nova\Fields\Status;
 use Perfocard\Flow\Nova\Filters\EnumFilter;
 use Perfocard\Flow\Nova\Resources\Status as StatusResource;
 
+/**
+ * @property \Perfocard\Flow\Models\FlowModel $resource
+ */
 abstract class Resource extends NovaResource
 {
     public function mergeFields(array $fields)
@@ -28,7 +31,7 @@ abstract class Resource extends NovaResource
             DateTime::make(__('Created At'), 'created_at')->exceptOnForms()->showOnPreview(),
         ];
 
-        if ($this->resource instanceof ShouldCollectStatus and $this->resource->status) {
+        if ($this->resource instanceof ShouldCollectStatus) {
             $fields = [
                 Status::make(get_class($this->resource->status)),
                 ...$fields,
@@ -114,7 +117,7 @@ abstract class Resource extends NovaResource
         }
 
         return $this->resource instanceof ShouldBeCompressed
-        and ! $this->resource->compressed_at;
+        and ! $this->resource->getAttribute('compressed_at');
     }
 
     private function canBeExtracted($request)
@@ -124,8 +127,8 @@ abstract class Resource extends NovaResource
         }
 
         return ($this->resource instanceof ShouldBeCompressed)
-        && $this->resource->compressed_at
-        && ! $this->resource->extracted_at;
+        && $this->resource->getAttribute('compressed_at')
+        && ! $this->resource->getAttribute('extracted_at');
     }
 
     private function canBePurged($request)
@@ -135,7 +138,7 @@ abstract class Resource extends NovaResource
         }
 
         return $this->resource instanceof ShouldBeCompressed
-        and $this->resource->compressed_at
-        and $this->resource->extracted_at;
+        and $this->resource->getAttribute('compressed_at')
+        and $this->resource->getAttribute('extracted_at');
     }
 }
