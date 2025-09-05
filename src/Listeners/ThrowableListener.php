@@ -12,11 +12,7 @@ class ThrowableListener
     {
         $resource->setStatusAndSave(
             status: $status,
-            payload: json_encode([
-                'exception' => get_class($exception),
-                'message' => $exception->getMessage(),
-                'trace' => $exception->getTrace(),
-            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            payload: (string) $exception,
         );
     }
 }
