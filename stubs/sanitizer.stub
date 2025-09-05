@@ -65,4 +65,14 @@ class {{ class }} extends Sanitizer
             'api_key',
         ];
     }
+
+    /**
+     * Optional pattern describing which URL path segments should be masked.
+     * Use '{mask}' in pattern to indicate segments that must be masked.
+     * Example: '/users/{mask}/orders/{mask}'. Return null to disable.
+     */
+    public function urlPathPattern(): ?string
+    {
+        return null;
+    }
 }

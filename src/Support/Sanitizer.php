@@ -6,31 +6,56 @@ class Sanitizer
 {
     /* ===== Config methods — can be overridden in subclasses ===== */
 
-    /** Keys to mask regardless of location (case-insensitive) */
+    /**
+     * Keys to mask regardless of location (case-insensitive).
+     *
+     * @return string[]
+     */
     public function keys(): array
     {
         return [];
     }
 
-    /** Exact dot-paths (case-insensitive per segment) */
+    /**
+     * Exact dot-paths to mask. Comparison is case-insensitive per segment.
+     *
+     * Example: 'payload.user.password' or 'headers.authorization'
+     *
+     * @return string[]
+     */
     public function paths(): array
     {
         return [];
     }
 
-    /** Regex patterns that match key names */
+    /**
+     * Regex patterns (PCRE) that match key names which should be masked.
+     * Patterns should include delimiters and modifiers, e.g. '/secret/i'.
+     *
+     * @return string[]
+     */
     public function regex(): array
     {
         return [];
     }
 
-    /** Which URL query parameters to mask */
+    /**
+     * URL query parameter names that must be masked when present in URLs.
+     * Comparison is case-insensitive.
+     *
+     * @return string[]
+     */
     public function urlQuery(): array
     {
         return [];
     }
 
-    /** Prefixes to preserve (like "Bearer "), mask the rest */
+    /**
+     * Prefixes to preserve (like "Bearer "), mask the rest.
+     * Return an associative array of header-name => prefix-regex.
+     *
+     * @return array<string,string>
+     */
     public function preservePrefix(): array
     {
         return [
@@ -38,20 +63,37 @@ class Sanitizer
         ];
     }
 
-    /** Mask character and its length */
+    /**
+     * Mask character.
+     */
     public function maskChar(): string
     {
         return '*';
     }
 
+    /**
+     * Default mask length.
+     */
     public function maskLen(): int
     {
         return 8;
     }
 
+    /**
+     * Optional pattern describing which URL path segments should be masked.
+     * Use '{mask}' in pattern to indicate segments that must be masked.
+     * Example: '/users/{mask}/orders/{mask}'. Return null to disable.
+     */
+    public function urlPathPattern(): ?string
+    {
+        return null;
+    }
+
     /* ===== Public API ===== */
 
-    /** Masks data according to configuration methods */
+    /**
+     * Masks data according to configuration methods.
+     */
     public function apply(array $data): array
     {
         $keys = array_map('mb_strtolower', $this->keys());
@@ -65,9 +107,21 @@ class Sanitizer
         $maskChar = $this->maskChar();
         $maskLen = $this->maskLen();
 
-        // Mask URL query parameters
-        if (isset($data['url']) && is_string($data['url']) && $urlQueryKeys) {
-            $data['url'] = $this->maskUrlQuery($data['url'], $urlQueryKeys, $maskChar, $maskLen);
+        if (isset($data['url']) && is_string($data['url'])) {
+            if ($this->urlPathPattern()) {
+                // Mask URL path segments according to the configured pattern
+                $data['url'] = $this->maskUrlPathByPattern(
+                    url: $data['url'],
+                    pattern: $this->urlPathPattern(),
+                    maskChar: $maskChar,
+                    maskLen: $maskLen,
+                );
+            }
+
+            if ($urlQueryKeys) {
+                // Mask URL query parameters
+                $data['url'] = $this->maskUrlQuery($data['url'], $urlQueryKeys, $maskChar, $maskLen);
+            }
         }
 
         // Recursively mask the structure
@@ -84,6 +138,12 @@ class Sanitizer
 
     /* ===== Internal mechanics ===== */
 
+    /**
+     * Recursively walk and mask array/object structures.
+     *
+     * @param  mixed  $value
+     * @return mixed
+     */
     private function maskArrayRecursive($value, array $ctx)
     {
         if (is_object($value)) {
@@ -137,6 +197,12 @@ class Sanitizer
         return $out;
     }
 
+    /**
+     * Check whether the current path matches any configured dot-path.
+     *
+     * @param  string[]  $currentPath
+     * @param  array<int, string[]>  $paths
+     */
     private function pathMatches(array $currentPath, array $paths): bool
     {
         foreach ($paths as $p) {
@@ -158,6 +224,12 @@ class Sanitizer
         return false;
     }
 
+    /**
+     * Mask a value according to its type.
+     *
+     * @param  mixed  $value
+     * @return mixed
+     */
     private function maskValue($value, string $maskChar, int $len)
     {
         if (is_string($value)) {
@@ -175,6 +247,9 @@ class Sanitizer
         return $value;
     }
 
+    /**
+     * Mask a value but preserve a leading prefix matched by the provided regex.
+     */
     private function maskWithPreserve(string $value, string $prefixRegex, string $maskChar, int $len): string
     {
         if (preg_match($prefixRegex, $value, $m)) {
@@ -184,6 +259,11 @@ class Sanitizer
         return str_repeat($maskChar, max(3, $len));
     }
 
+    /**
+     * Mask URL query parameters specified in $queryKeys.
+     *
+     * @param  string[]  $queryKeys
+     */
     private function maskUrlQuery(string $url, array $queryKeys, string $maskChar, int $len): string
     {
         $parts = parse_url($url);
@@ -220,5 +300,55 @@ class Sanitizer
         $authority = $authHost ? '//'.$authHost : '';
 
         return ($scheme ? "$scheme:" : '').$authority.$port.$path.$query.$fragment;
+    }
+
+    /**
+     * Mask URL path segments according to a template pattern. Segments marked
+     * as '{mask}' in the pattern will be replaced with the configured mask
+     * token. Only non-mask segments are URL-encoded — mask tokens are left intact.
+     */
+    private function maskUrlPathByPattern(string $url, string $pattern, string $maskChar, int $maskLen): string
+    {
+        $parts = parse_url($url);
+        $path = $parts['path'] ?? '';
+
+        $pSegs = $path === '' ? [] : array_values(array_filter(explode('/', $path), fn ($s) => $s !== ''));
+        $tplSegs = array_values(array_filter(explode('/', trim($pattern, '/')), fn ($s) => $s !== ''));
+
+        $maskToken = str_repeat($maskChar, max(3, $maskLen));
+
+        $outSegs = $pSegs;
+        $n = min(count($pSegs), count($tplSegs));
+        for ($i = 0; $i < $n; $i++) {
+            if ($tplSegs[$i] === '{mask}') {
+                $outSegs[$i] = $maskToken;
+            }
+        }
+
+        // IMPORTANT: encode only non-masked segments
+        $encodedSegs = array_map(function ($seg) use ($maskToken) {
+            // normalize existing encoding, but keep mask token intact
+            if ($seg === $maskToken) {
+                return $maskToken;
+            }
+
+            return rawurlencode(rawurldecode($seg));
+        }, $outSegs);
+
+        $parts['path'] = '/'.implode('/', $encodedSegs);
+
+        // rebuild URL
+        $scheme = $parts['scheme'] ?? null;
+        $host = $parts['host'] ?? null;
+        $port = isset($parts['port']) ? ':'.$parts['port'] : '';
+        $user = $parts['user'] ?? null;
+        $pass = isset($parts['pass']) ? ':'.$parts['pass'] : '';
+        $pass = ($user || $pass) ? "$pass@" : '';
+        $query = isset($parts['query']) ? '?'.$parts['query'] : '';
+        $fragment = isset($parts['fragment']) ? '#'.$parts['fragment'] : '';
+        $authHost = ($user ? "$user$pass" : '').($host ? $host : '');
+        $authority = $authHost ? '//'.$authHost : '';
+
+        return ($scheme ? "$scheme:" : '').$authority.$port.$parts['path'].$query.$fragment;
     }
 }

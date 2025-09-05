@@ -66,14 +66,6 @@ class PendingEndpoint
 
         $this->model = $this->endpoint->processResponse($response, $this->model);
 
-        // $content = $response->json();
-
-        // if (is_null($content)) {
-        //     $content = $response->body();
-        // } else {
-        //     $content = json_encode($content, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        // }
-
         $rawResponse = ResponseFormatter::build($response, $sanitizer);
 
         $this->model->setStatusAndSave(
