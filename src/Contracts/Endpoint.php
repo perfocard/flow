@@ -21,5 +21,5 @@ interface Endpoint
 
     public function processResponse(Response $response, FlowModel $model): FlowModel;
 
-    public function mask(): array;
+    public function sanitizer(): ?string;
 }

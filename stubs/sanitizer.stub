@@ -1,0 +1,68 @@
+<?php
+
+namespace {{ namespace }};
+
+use Perfocard\Flow\Support\Sanitizer;
+
+class {{ class }} extends Sanitizer
+{
+    /**
+     * Keys to mask regardless of their location in the payload.
+     * Comparison is case-insensitive.
+     *
+     * @return string[] List of key names to mask
+     */
+    public function keys(): array
+    {
+        return [
+            'password',
+            'token',
+            'access_token',
+            'api_key',
+        ];
+    }
+
+    /**
+     * Exact dot paths to mask. Each path is a dot-separated string where
+     * comparison is performed case-insensitively per segment.
+     *
+     * Example: 'payload.user.password' or 'headers.authorization'
+     *
+     * @return string[] List of dot-paths to mask
+     */
+    public function paths(): array
+    {
+        return [
+            'payload.user.password',
+            'headers.authorization',
+        ];
+    }
+
+    /**
+     * Regex patterns (PCRE) that match key names which should be masked.
+     * Patterns should include delimiters and modifiers, e.g. '/(secret)/i'.
+     *
+     * @return string[] List of regex patterns
+     */
+    public function regex(): array
+    {
+        return [
+            '/(secret|token|password|api[-_]?key)/i',
+        ];
+    }
+
+    /**
+     * URL query parameter names that must be masked when present in URLs.
+     * Comparison is case-insensitive.
+     *
+     * @return string[] List of query parameter names to mask
+     */
+    public function urlQuery(): array
+    {
+        return [
+            'token',
+            'access_token',
+            'api_key',
+        ];
+    }
+}

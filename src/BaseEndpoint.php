@@ -7,13 +7,20 @@ use Perfocard\Flow\Models\FlowModel;
 
 abstract class BaseEndpoint implements Endpoint
 {
+    /**
+     * Return additional headers for the request.
+     */
     public function headers(FlowModel $model): array
     {
         return [];
     }
 
-    public function mask(): array
+    /**
+     * Return the sanitizer class name to use for this endpoint, or null to
+     * use the default behavior.
+     */
+    public function sanitizer(): ?string
     {
-        return [];
+        return null;
     }
 }

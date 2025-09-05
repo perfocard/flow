@@ -52,6 +52,15 @@ class {{ class }} extends BaseEndpoint
     }
 
     /**
+     * Return the sanitizer class name to use for this endpoint, or null to
+     * use the default behavior.
+     */
+    public function sanitizer(): ?string
+    {
+        return null;
+    }
+
+    /**
      * Process the API response and update the model.
      */
     public function processResponse(Response $response, FlowModel $model): FlowModel

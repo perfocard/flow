@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Perfocard\Flow\Contracts\Endpoint;
 use Perfocard\Flow\Models\FlowModel;
+use Perfocard\Flow\Support\CurlFormatter;
 
 class PendingEndpoint
 {
@@ -26,12 +27,29 @@ class PendingEndpoint
     {
         $payload = $this->endpoint->buildPayload($this->model);
 
+        $method = Str::upper($this->endpoint->method($this->model));
+
+        $log = [
+            'url' => $this->endpoint->url($this->model),
+            'method' => $method,
+            'headers' => $this->endpoint->headers($this->model),
+            'payload' => $payload,
+        ];
+
+        if ($this->endpoint->sanitizer()) {
+            $sanitizerClass = $this->endpoint->sanitizer();
+            $sanitizer = new $sanitizerClass;
+
+            $log = $sanitizer->apply($log);
+            $log = CurlFormatter::build($log, $sanitizer?->maskChar());
+        } else {
+            $log = CurlFormatter::build($log);
+        }
+
         $this->model->setStatusAndSave(
             status: $this->endpoint->processing(),
-            payload: json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            payload: $log,
         );
-
-        $method = Str::upper($this->endpoint->method($this->model));
 
         $options = [];
 

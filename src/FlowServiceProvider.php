@@ -61,6 +61,7 @@ class FlowServiceProvider extends ServiceProvider
                 \Perfocard\Flow\Console\Commands\FlowInstallCommand::class,
                 \Perfocard\Flow\Console\Commands\CompressCommand::class,
                 \Perfocard\Flow\Console\Commands\PurgeCommand::class,
+                \Perfocard\Flow\Console\Commands\SanitizerMakeCommand::class,
             ]);
         }
     }
