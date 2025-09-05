@@ -7,6 +7,7 @@ use Illuminate\Support\Str;
 use Perfocard\Flow\Contracts\Endpoint;
 use Perfocard\Flow\Models\FlowModel;
 use Perfocard\Flow\Support\CurlFormatter;
+use Perfocard\Flow\Support\ResponseFormatter;
 
 class PendingEndpoint
 {
@@ -29,6 +30,13 @@ class PendingEndpoint
 
         $method = Str::upper($this->endpoint->method($this->model));
 
+        $sanitizer = null;
+
+        if ($this->endpoint->sanitizer()) {
+            $sanitizerClass = $this->endpoint->sanitizer();
+            $sanitizer = new $sanitizerClass;
+        }
+
         $log = [
             'url' => $this->endpoint->url($this->model),
             'method' => $method,
@@ -36,15 +44,8 @@ class PendingEndpoint
             'payload' => $payload,
         ];
 
-        if ($this->endpoint->sanitizer()) {
-            $sanitizerClass = $this->endpoint->sanitizer();
-            $sanitizer = new $sanitizerClass;
-
-            $log = $sanitizer->apply($log);
-            $log = CurlFormatter::build($log, $sanitizer?->maskChar());
-        } else {
-            $log = CurlFormatter::build($log);
-        }
+        $log = $sanitizer->apply($log);
+        $log = CurlFormatter::build($log, $sanitizer?->maskChar());
 
         $this->model->setStatusAndSave(
             status: $this->endpoint->processing(),
@@ -65,17 +66,19 @@ class PendingEndpoint
 
         $this->model = $this->endpoint->processResponse($response, $this->model);
 
-        $content = $response->json();
+        // $content = $response->json();
 
-        if (is_null($content)) {
-            $content = $response->body();
-        } else {
-            $content = json_encode($content, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        }
+        // if (is_null($content)) {
+        //     $content = $response->body();
+        // } else {
+        //     $content = json_encode($content, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        // }
+
+        $rawResponse = ResponseFormatter::build($response, $sanitizer);
 
         $this->model->setStatusAndSave(
             status: $this->endpoint->complete(),
-            payload: $content,
+            payload: $rawResponse,
         );
     }
 }

@@ -163,11 +163,13 @@ class Sanitizer
         if (is_string($value)) {
             return str_repeat($maskChar, max(3, $len));
         }
+
         if (is_numeric($value)) {
-            return 0;
+            return (int) str_repeat('9', max(1, $len));
         }
+
         if (is_array($value) || is_object($value)) {
-            return str_repeat($maskChar, max(3, $len));
+            return ['__masked__' => true];
         }
 
         return $value;
