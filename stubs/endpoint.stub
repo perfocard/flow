@@ -11,8 +11,6 @@ class {{ class }} extends BaseEndpoint
 {
     /**
      * Get the status representing the processing state.
-     *
-     * @return \Perfocard\Flow\Contracts\BackedEnum
      */
     public function processing(): BackedEnum
     {
@@ -21,8 +19,6 @@ class {{ class }} extends BaseEndpoint
 
     /**
      * Get the status representing the completed state.
-     *
-     * @return \Perfocard\Flow\Contracts\BackedEnum
      */
     public function complete(): BackedEnum
     {
@@ -31,9 +27,6 @@ class {{ class }} extends BaseEndpoint
 
     /**
      * Determine the HTTP method for the request.
-     *
-     * @param  \Perfocard\Flow\Models\FlowModel  $model
-     * @return string
      */
     public function method(FlowModel $model): string
     {
@@ -42,9 +35,6 @@ class {{ class }} extends BaseEndpoint
 
     /**
      * Get the URL to which the request should be sent.
-     *
-     * @param  \Perfocard\Flow\Models\FlowModel  $model
-     * @return string
      */
     public function url(FlowModel $model): string
     {
@@ -54,7 +44,6 @@ class {{ class }} extends BaseEndpoint
     /**
      * Build the request payload.
      *
-     * @param  \Perfocard\Flow\Models\FlowModel  $model
      * @return array<string, mixed>
      */
     public function buildPayload(FlowModel $model): array
@@ -64,10 +53,6 @@ class {{ class }} extends BaseEndpoint
 
     /**
      * Process the API response and update the model.
-     *
-     * @param  \Illuminate\Http\Client\Response  $response
-     * @param  \Perfocard\Flow\Models\FlowModel  $model
-     * @return \Perfocard\Flow\Models\FlowModel
      */
     public function processResponse(Response $response, FlowModel $model): FlowModel
     {
