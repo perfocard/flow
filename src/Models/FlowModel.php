@@ -159,7 +159,7 @@ class FlowModel extends Model
         return $this;
     }
 
-    public function setStatusAndSave(BackedEnum|ShouldBeDefibrillated $status, ?string $payload, ?StatusType $type = null): self
+    public function setStatusAndSave(BackedEnum|ShouldBeDefibrillated $status, ?string $payload = null, ?StatusType $type = null): self
     {
         $this->setStatus($status, $payload, $type);
         $this->save();

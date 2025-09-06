@@ -1,0 +1,71 @@
+<?php
+
+namespace {{ namespace }};
+
+{{ statusUse }}use Illuminate\Http\Request;
+use Perfocard\Flow\Contracts\BackedEnum;
+use Perfocard\Flow\FlowCallback;
+use Perfocard\Flow\Models\FlowModel;
+
+class PaymentCallback extends FlowCallback
+{
+    /**
+     * Return the initial status for the callback.
+     *
+     * The system will verify this status before processing and will raise an
+     * error if the current resource status does not match it.
+     */
+    public function initial(FlowModel $model, Request $request): BackedEnum
+    {
+        {{ statusInitial }}
+    }
+
+    /**
+     * Return the processing status for the callback.
+     *
+     * The system will assign this status to the resource when processing begins.
+     */
+    public function processing(FlowModel $model, Request $request): BackedEnum
+    {
+        {{ statusProcessing }}
+    }
+
+    /**
+     * Return the failed/error status for the callback.
+     *
+     * The system will assign this status to the resource if processing finishes with an error.
+     */
+    public function failed(FlowModel $model, Request $request): BackedEnum
+    {
+        {{ statusError }}
+    }
+
+    /**
+     * Return the complete/success status for the callback.
+     *
+     * Define the final status that the system will assign to the resource
+     * after successful processing.
+     */
+    public function complete(FlowModel $model, Request $request): BackedEnum
+    {
+        {{ statusComplete }}
+    }
+
+    /**
+     * Return the sanitizer class name to use, or null to use default.
+     */
+    public function sanitizer(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * Handle the callback logic and return the (possibly modified) model.
+     */
+    public function handle(FlowModel $model, Request $request): FlowModel
+    {
+        // Handle the callback logic here
+
+        return $model;
+    }
+}

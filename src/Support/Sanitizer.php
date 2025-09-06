@@ -124,6 +124,11 @@ class Sanitizer
             }
         }
 
+        // Якщо тіло — plain string (HTML/текст) -> маскуємо вміст за regex()
+        if (isset($data['payload']) && is_string($data['payload'])) {
+            $data['payload'] = $this->maskStringByRegex($data['payload'], $regexList, $maskChar, $maskLen);
+        }
+
         // Recursively mask the structure
         return $this->maskArrayRecursive($data, [
             'keys' => $keys,
@@ -350,5 +355,19 @@ class Sanitizer
         $authority = $authHost ? '//'.$authHost : '';
 
         return ($scheme ? "$scheme:" : '').$authority.$port.$parts['path'].$query.$fragment;
+    }
+
+    private function maskStringByRegex(string $s, array $regexList, string $maskChar, int $maskLen): string
+    {
+        $mask = str_repeat($maskChar, max(3, $maskLen));
+
+        foreach ($regexList as $rx) {
+            // пропускаємо невалідні патерни
+            if (@preg_match($rx, '') !== false) {
+                $s = preg_replace($rx, $mask, $s);
+            }
+        }
+
+        return $s;
     }
 }

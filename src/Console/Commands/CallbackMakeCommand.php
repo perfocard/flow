@@ -6,28 +6,28 @@ use Illuminate\Console\GeneratorCommand;
 use Illuminate\Support\Str;
 use Symfony\Component\Console\Input\InputOption;
 
-class TaskMakeCommand extends GeneratorCommand
+class CallbackMakeCommand extends GeneratorCommand
 {
     /**
      * The console command name.
      *
      * @var string
      */
-    protected $name = 'make:task';
+    protected $name = 'make:callback';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Create a new task';
+    protected $description = 'Create a new callback class.';
 
     /**
      * The type of class being generated.
      *
      * @var string
      */
-    protected $type = 'Endpoint';
+    protected $type = 'Callback';
 
     /**
      * Replace the class name for the given stub.
@@ -43,11 +43,11 @@ class TaskMakeCommand extends GeneratorCommand
         $stub = str_replace('{{ class }}', $this->argument('name'), $stub);
 
         // additional replacements for statuses if -m|--model was provided
-        [$statusUse, $statusProcessing, $statusComplete] = $this->buildStatusReplacements();
+        [$statusUse, $statusInitial, $statusProcessing, $statusError, $statusComplete] = $this->buildStatusReplacements();
 
         $stub = str_replace(
-            ['{{ statusUse }}', '{{ statusProcessing }}', '{{ statusComplete }}'],
-            [$statusUse, $statusProcessing, $statusComplete],
+            ['{{ statusUse }}', '{{ statusInitial }}', '{{ statusProcessing }}', '{{ statusError }}', '{{ statusComplete }}'],
+            [$statusUse, $statusInitial, $statusProcessing, $statusError, $statusComplete],
             $stub
         );
 
@@ -55,7 +55,7 @@ class TaskMakeCommand extends GeneratorCommand
     }
 
     /**
-     * Returns strings for the use statement and method bodies for processing/complete.
+     * Returns strings for use statement and method bodies for processing/complete.
      *
      * @return array{string,string,string}
      */
@@ -67,7 +67,9 @@ class TaskMakeCommand extends GeneratorCommand
             // if no model provided — remove use and leave TODOs in methods
             return [
                 '', // {{ statusUse }}
+                '/* TODO: return YourStatusEnum::PENDING; */',
                 '/* TODO: return YourStatusEnum::PROCESSING; */',
+                '/* TODO: return YourStatusEnum::ERROR; */',
                 '/* TODO: return YourStatusEnum::COMPLETE; */',
             ];
         }
@@ -89,16 +91,18 @@ class TaskMakeCommand extends GeneratorCommand
         $statusClass = class_basename($statusFqcn);
 
         $statusUse = 'use '.$statusFqcn.";\n";
+        $statusInitial = 'return '.$statusClass.'::PENDING;';
         $statusProcessing = 'return '.$statusClass.'::PROCESSING;';
+        $statusError = 'return '.$statusClass.'::ERROR;';
         $statusComplete = 'return '.$statusClass.'::COMPLETE;';
 
-        return [$statusUse, $statusProcessing, $statusComplete];
+        return [$statusUse, $statusInitial, $statusProcessing, $statusError, $statusComplete];
     }
 
     protected function getStub()
     {
-        $publishedStub = base_path('stubs/task.stub');
-        $packageStub = __DIR__.'/../../../stubs/task.stub';
+        $publishedStub = base_path('stubs/callback.stub');
+        $packageStub = __DIR__.'/../../../stubs/callback.stub';
 
         return file_exists($publishedStub)
             ? $publishedStub
@@ -113,7 +117,7 @@ class TaskMakeCommand extends GeneratorCommand
      */
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace.'\\Tasks';
+        return $rootNamespace.'\\Callbacks';
     }
 
     /**

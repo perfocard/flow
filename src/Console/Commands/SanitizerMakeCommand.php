@@ -4,6 +4,7 @@ namespace Perfocard\Flow\Console\Commands;
 
 use Illuminate\Console\GeneratorCommand;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 
 class SanitizerMakeCommand extends GeneratorCommand
 {
@@ -19,7 +20,7 @@ class SanitizerMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $description = 'Create a new Sanitizer class for Endpoint sanitization.';
+    protected $description = 'Create a new Sanitizer class.';
 
     /**
      * The type of class being generated.
@@ -51,7 +52,15 @@ class SanitizerMakeCommand extends GeneratorCommand
      */
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace.'\Endpoints';
+        if ($this->option('endpoint')) {
+            return $rootNamespace.'\Endpoints';
+        }
+
+        if ($this->option('callback')) {
+            return $rootNamespace.'\Callbacks';
+        }
+
+        return $rootNamespace.'\Sanitizers';
     }
 
     /**
@@ -63,6 +72,19 @@ class SanitizerMakeCommand extends GeneratorCommand
     {
         return [
             ['name', InputArgument::REQUIRED, 'The name of the sanitizer.'],
+        ];
+    }
+
+    /**
+     * Get the console command options.
+     *
+     * @return array
+     */
+    protected function getOptions()
+    {
+        return [
+            ['endpoint', 'e', InputOption::VALUE_NONE, 'Generate the sanitizer in the Endpoints directory'],
+            ['callback', 'c', InputOption::VALUE_NONE, 'Generate the sanitizer in the Callbacks directory'],
         ];
     }
 }

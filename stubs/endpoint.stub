@@ -3,11 +3,11 @@
 namespace {{ namespace }};
 
 {{ statusUse }}use Illuminate\Http\Client\Response;
-use Perfocard\Flow\BaseEndpoint;
 use Perfocard\Flow\Contracts\BackedEnum;
+use Perfocard\Flow\FlowEndpoint;
 use Perfocard\Flow\Models\FlowModel;
 
-class {{ class }} extends BaseEndpoint
+class {{ class }} extends FlowEndpoint
 {
     /**
      * Get the status representing the processing state.
@@ -65,6 +65,8 @@ class {{ class }} extends BaseEndpoint
      */
     public function processResponse(Response $response, FlowModel $model): FlowModel
     {
+        // Handle the endpoint logic here
+
         return $model;
     }
 }

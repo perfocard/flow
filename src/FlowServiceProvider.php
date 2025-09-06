@@ -57,6 +57,7 @@ class FlowServiceProvider extends ServiceProvider
             $this->commands([
                 \Perfocard\Flow\Console\Commands\StatusMakeCommand::class,
                 \Perfocard\Flow\Console\Commands\EndpointMakeCommand::class,
+                \Perfocard\Flow\Console\Commands\CallbackMakeCommand::class,
                 \Perfocard\Flow\Console\Commands\TaskMakeCommand::class,
                 \Perfocard\Flow\Console\Commands\FlowInstallCommand::class,
                 \Perfocard\Flow\Console\Commands\CompressCommand::class,

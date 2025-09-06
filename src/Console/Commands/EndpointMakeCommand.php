@@ -42,7 +42,7 @@ class EndpointMakeCommand extends GeneratorCommand
 
         $stub = str_replace('{{ class }}', $this->argument('name'), $stub);
 
-        // додаткові заміни для статусів, якщо передано -m|--model
+        // additional replacements for statuses if -m|--model was provided
         [$statusUse, $statusProcessing, $statusComplete] = $this->buildStatusReplacements();
 
         $stub = str_replace(
@@ -55,7 +55,7 @@ class EndpointMakeCommand extends GeneratorCommand
     }
 
     /**
-     * Повертає рядки для use та тіла методів processing/complete.
+     * Return strings for use statement and method bodies for processing/complete.
      *
      * @return array{string,string,string}
      */
@@ -64,7 +64,7 @@ class EndpointMakeCommand extends GeneratorCommand
         $model = $this->option('model');
 
         if (! $model) {
-            // якщо модель не передана — прибираємо use і лишаємо TODO у методах
+            // if no model provided — remove use and leave TODOs in methods
             return [
                 '', // {{ statusUse }}
                 '/* TODO: return YourStatusEnum::PROCESSING; */',
@@ -72,24 +72,23 @@ class EndpointMakeCommand extends GeneratorCommand
             ];
         }
 
-        // Нормалізуємо шлях (Foo/Bar -> Foo\Bar)
+        // Normalize the path (Foo/Bar -> Foo\\Bar)
         $model = Str::replace('/', '\\', trim($model, '\\'));
 
-        // Визначаємо кореневий простір імен для моделей (App\Models або App\)
+        // Determine the root namespace for models (App\\Models or App\\)
         $rootNamespace = $this->laravel->getNamespace();
         $modelsRoot = is_dir(app_path('Models'))
             ? $rootNamespace.'Models\\'
             : $rootNamespace;
 
-        // Якщо юзер уже подав повний FQCN — не префіксуємо
+        // If the user already provided a full FQCN — do not prefix
         $qualifiedModel = Str::startsWith($model, $rootNamespace) ? $model : $modelsRoot.$model;
 
-        // Клас статусу: <LastSegment>Status (Foo\Bar -> Foo\BarStatus)
+        // Status class: <LastSegment>Status (Foo\\Bar -> Foo\\BarStatus)
         $statusFqcn = preg_replace('/\\\\([^\\\\]+)$/', '\\\\$1Status', $qualifiedModel);
         $statusClass = class_basename($statusFqcn);
 
-        $statusUse = 'use '.$statusFqcn.';
-';
+        $statusUse = 'use '.$statusFqcn.";\n";
         $statusProcessing = 'return '.$statusClass.'::PROCESSING;';
         $statusComplete = 'return '.$statusClass.'::COMPLETE;';
 
@@ -114,7 +113,7 @@ class EndpointMakeCommand extends GeneratorCommand
      */
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace.'\Endpoints';
+        return $rootNamespace.'\\Endpoints';
     }
 
     /**

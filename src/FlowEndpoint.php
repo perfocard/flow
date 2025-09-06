@@ -5,7 +5,7 @@ namespace Perfocard\Flow;
 use Perfocard\Flow\Contracts\Endpoint;
 use Perfocard\Flow\Models\FlowModel;
 
-abstract class BaseEndpoint implements Endpoint
+abstract class FlowEndpoint implements Endpoint
 {
     /**
      * Return additional headers for the request.
