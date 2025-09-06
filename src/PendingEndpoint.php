@@ -61,10 +61,13 @@ class PendingEndpoint
             $sanitizer = new $sanitizerClass;
 
             $requestData = $sanitizer->apply($requestData);
-        }
 
-        // Build a human-friendly curl-like command for logging
-        $requestData = CurlFormatter::build($requestData, $sanitizer?->maskChar());
+            // Build a human-friendly curl-like command for logging
+            $requestData = CurlFormatter::build($requestData, $sanitizer->maskChar());
+        } else {
+            // Build a human-friendly curl-like command for logging
+            $requestData = CurlFormatter::build($requestData);
+        }
 
         $this->model->setStatusAndSave(
             status: $this->endpoint->processing(),

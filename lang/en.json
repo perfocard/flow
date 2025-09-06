@@ -40,5 +40,6 @@
   "Response": "Response",
   "Callback": "Callback",
   "Exception": "Exception",
+  "Probe": "Probe",
   "Type": "Type"
 }

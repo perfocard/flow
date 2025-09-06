@@ -61,4 +61,15 @@ return [
         // Purge timeout in minutes after extraction
         'timeout' => env('FLOW_PURGE_TIMEOUT', 60 * 24 * 2),
     ],
+
+    // 'probes' => [
+    //     \App\Models\Payment::class => [
+    //         'probe_model' => \App\Models\Payment\Probe::class,
+    //         'trigger_statuses' => [
+    //             \App\Models\PaymentStatus::PENDING,
+    //         ],
+    //         'grace' => 300, // 5 minutes
+    //         'batch' => 200,
+    //     ],
+    // ],
 ];

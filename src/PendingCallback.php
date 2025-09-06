@@ -90,8 +90,8 @@ class PendingCallback
         ];
 
         // If the callback provides a sanitizer class, apply it to the request data
-        if ($this->callback->sanitizer()) {
-            $sanitizerClass = $this->callback->sanitizer();
+        if ($this->callback->sanitizer($this->model, $this->request)) {
+            $sanitizerClass = $this->callback->sanitizer($this->model, $this->request);
             $sanitizer = new $sanitizerClass;
 
             $requestData = $sanitizer->apply($requestData);

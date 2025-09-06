@@ -17,5 +17,5 @@ interface Callback
 
     public function handle(FlowModel $model, Request $request): FlowModel;
 
-    public function sanitizer(): ?string;
+    public function sanitizer(FlowModel $model, Request $request): ?string;
 }
