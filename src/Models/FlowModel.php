@@ -24,6 +24,8 @@ class FlowModel extends Model
 {
     public ?string $__creatingStatusPayload = null;
 
+    public ?string $__creatingStatusType = null;
+
     public bool $__forceStatusEvents = false;
 
     /**
@@ -36,6 +38,7 @@ class FlowModel extends Model
         return [
             ...$this->fillable,
             'statusPayload',
+            'statusType',
         ];
     }
 
@@ -79,8 +82,9 @@ class FlowModel extends Model
 
         static::creating(function (FlowModel $model) {
             $model->__creatingStatusPayload = $model->statusPayload;
+            $model->__creatingStatusType = $model->statusType;
 
-            unset($model->statusPayload);
+            unset($model->statusPayload, $model->statusType);
         });
 
         static::created(function (FlowModel $model) {
@@ -93,6 +97,7 @@ class FlowModel extends Model
                 $model->statuses()->create([
                     'status' => $model->status,
                     'payload' => $model->__creatingStatusPayload,
+                    'type' => $model->statusType,
                 ]);
             }
         });
@@ -112,10 +117,11 @@ class FlowModel extends Model
                     $model->statuses()->create([
                         'status' => $model->status,
                         'payload' => $model->statusPayload,
+                        'type' => $model->statusType,
                     ]);
                 }
 
-                unset($model->statusPayload);
+                unset($model->statusPayload, $model->statusType);
             }
         });
 
@@ -144,17 +150,18 @@ class FlowModel extends Model
         );
     }
 
-    public function setStatus(BackedEnum|ShouldBeDefibrillated $status, ?string $payload = null): self
+    public function setStatus(BackedEnum|ShouldBeDefibrillated $status, ?string $payload = null, ?StatusType $type = null): self
     {
         $this->status = $status;
         $this->statusPayload = $payload;
+        $this->statusType = $type;
 
         return $this;
     }
 
-    public function setStatusAndSave(BackedEnum|ShouldBeDefibrillated $status, ?string $payload = null): self
+    public function setStatusAndSave(BackedEnum|ShouldBeDefibrillated $status, ?string $payload, ?StatusType $type = null): self
     {
-        $this->setStatus($status, $payload);
+        $this->setStatus($status, $payload, $type);
         $this->save();
 
         return $this;

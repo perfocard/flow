@@ -35,5 +35,10 @@
   "Are you sure you want to defibrillate this resource? This will reset its status to the initial state and restart the process.": "Sind Sie sicher, dass Sie diese Ressource defibrillieren möchten? Dadurch wird ihr Status auf den Anfangszustand zurückgesetzt und der Prozess neu gestartet.",
   "Are you sure you want to compress this resource? The existing payload will be moved from the database to remote storage, written into a file, and archived. You will be able to restore the payload later.": "Sind Sie sicher, dass Sie diese Ressource komprimieren möchten? Die vorhandene Payload wird aus der Datenbank in den entfernten Speicher verschoben, in eine Datei geschrieben und archiviert. Sie können die Payload später wiederherstellen.",
   "Are you sure you want to extract this resource? The payload will be restored to the database for a limited time and will then be automatically cleared.": "Sind Sie sicher, dass Sie diese Ressource extrahieren möchten? Die Payload wird für begrenzte Zeit in die Datenbank zurückgeschrieben und anschließend automatisch gelöscht.",
-  "Are you sure you want to purge this resource? This will immediately remove the restored payload from the database instead of waiting for automatic cleanup.": "Sind Sie sicher, dass Sie diese Ressource bereinigen möchten? Dadurch wird die wiederhergestellte Payload sofort aus der Datenbank entfernt, anstatt auf die automatische Bereinigung zu warten."
+  "Are you sure you want to purge this resource? This will immediately remove the restored payload from the database instead of waiting for automatic cleanup.": "Sind Sie sicher, dass Sie diese Ressource bereinigen möchten? Dadurch wird die wiederhergestellte Payload sofort aus der Datenbank entfernt, anstatt auf die automatische Bereinigung zu warten.",
+  "Request": "Anfrage",
+  "Response": "Antwort",
+  "Callback": "Rückruf",
+  "Exception": "Ausnahme",
+  "Type": "Typ"
 }

@@ -35,5 +35,10 @@
   "Are you sure you want to defibrillate this resource? This will reset its status to the initial state and restart the process.": "Ви впевнені, що хочете дефібрилювати цей ресурс? Його статус буде скинуто до початкового стану, а процес розпочнеться знову.",
   "Are you sure you want to compress this resource? The existing payload will be moved from the database to remote storage, written into a file, and archived. You will be able to restore the payload later.": "Ви впевнені, що хочете стиснути цей ресурс? Наявний payload буде переміщено з бази даних на віддалене сховище, записано у файл і заархівовано. Пізніше ви зможете відновити payload.",
   "Are you sure you want to extract this resource? The payload will be restored to the database for a limited time and will then be automatically cleared.": "Ви впевнені, що хочете витягнути цей ресурс? Payload буде відновлено у базі даних на певний час, після чого його буде автоматично очищено.",
-  "Are you sure you want to purge this resource? This will immediately remove the restored payload from the database instead of waiting for automatic cleanup.": "Ви впевнені, що хочете очистити цей ресурс? Відновлений payload буде негайно видалено з бази даних замість очікування автоматичного очищення."
+  "Are you sure you want to purge this resource? This will immediately remove the restored payload from the database instead of waiting for automatic cleanup.": "Ви впевнені, що хочете очистити цей ресурс? Відновлений payload буде негайно видалено з бази даних замість очікування автоматичного очищення.",
+  "Request": "Запит",
+  "Response": "Відповідь",
+  "Callback": "Зворотний виклик",
+  "Exception": "Виключення",
+  "Type": "Тип"
 }

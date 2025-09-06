@@ -35,5 +35,10 @@
   "Are you sure you want to defibrillate this resource? This will reset its status to the initial state and restart the process.": "Are you sure you want to defibrillate this resource? This will reset its status to the initial state and restart the process.",
   "Are you sure you want to compress this resource? The existing payload will be moved from the database to remote storage, written into a file, and archived. You will be able to restore the payload later.": "Are you sure you want to compress this resource? The existing payload will be moved from the database to remote storage, written into a file, and archived. You will be able to restore the payload later.",
   "Are you sure you want to extract this resource? The payload will be restored to the database for a limited time and will then be automatically cleared.": "Are you sure you want to extract this resource? The payload will be restored to the database for a limited time and will then be automatically cleared.",
-  "Are you sure you want to purge this resource? This will immediately remove the restored payload from the database instead of waiting for automatic cleanup.": "Are you sure you want to purge this resource? This will immediately remove the restored payload from the database instead of waiting for automatic cleanup."
+  "Are you sure you want to purge this resource? This will immediately remove the restored payload from the database instead of waiting for automatic cleanup.": "Are you sure you want to purge this resource? This will immediately remove the restored payload from the database instead of waiting for automatic cleanup.",
+  "Request": "Request",
+  "Response": "Response",
+  "Callback": "Callback",
+  "Exception": "Exception",
+  "Type": "Type"
 }

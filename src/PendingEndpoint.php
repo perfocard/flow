@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Perfocard\Flow\Contracts\Endpoint;
 use Perfocard\Flow\Models\FlowModel;
+use Perfocard\Flow\Models\StatusType;
 use Perfocard\Flow\Support\CurlFormatter;
 use Perfocard\Flow\Support\ResponseFormatter;
 
@@ -50,6 +51,7 @@ class PendingEndpoint
         $this->model->setStatusAndSave(
             status: $this->endpoint->processing(),
             payload: $log,
+            type: StatusType::REQUEST,
         );
 
         $options = [];
@@ -71,6 +73,7 @@ class PendingEndpoint
         $this->model->setStatusAndSave(
             status: $this->endpoint->complete(),
             payload: $rawResponse,
+            type: StatusType::RESPONSE,
         );
     }
 }

@@ -16,6 +16,7 @@ use Perfocard\Flow\Contracts\ShouldBeCompressed;
 class Status extends FlowModel implements ShouldBeCompressed
 {
     protected $fillable = [
+        'type',
         'statusable_type',
         'statusable_id',
         'status',
@@ -25,6 +26,7 @@ class Status extends FlowModel implements ShouldBeCompressed
     ];
 
     protected $casts = [
+        'type' => StatusType::class,
         'compressed_at' => 'datetime',
         'extracted_at' => 'datetime',
     ];

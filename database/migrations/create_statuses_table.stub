@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create(config('flow.status.table'), function (Blueprint $table) {
             $table->id();
             $table->unsignedTinyInteger('status');
+            $table->unsignedTinyInteger('type')->nullable();
             $table->text('payload')->nullable();
             $table->foreignId('statusable_id');
             $table->string('statusable_type');

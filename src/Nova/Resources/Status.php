@@ -8,7 +8,9 @@ use Laravel\Nova\Fields\MorphTo;
 use Laravel\Nova\Fields\Select;
 use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Panel;
+use Perfocard\Flow\Models\StatusType;
 use Perfocard\Flow\Nova\Fields\DateTime;
+use Perfocard\Flow\Nova\Fields\Enum;
 use Perfocard\Flow\Nova\Resource;
 
 /**
@@ -87,6 +89,9 @@ class Status extends Resource
             Select::make(__('Status'), 'status')
                 ->options(fn () => $this->resource->statusable->getAttribute('status')->map())
                 ->displayUsingLabels()
+                ->showOnPreview(),
+
+            Enum::make(__('Type'), 'type', StatusType::class)
                 ->showOnPreview(),
 
             MorphTo::make(__('Resource'), 'statusable')->showOnPreview(),
