@@ -14,6 +14,7 @@ enum StatusType: int implements BackedEnum
     case CALLBACK = 2;
     case EXCEPTION = 3;
     case PROBE = 4;
+    case SHELL = 5;
 
     /**
      * Get the displayable label of the status.
@@ -26,6 +27,7 @@ enum StatusType: int implements BackedEnum
             self::CALLBACK => __('Callback'),
             self::EXCEPTION => __('Exception'),
             self::PROBE => __('Probe'),
+            self::SHELL => __('Shell'),
         };
     }
 }
