@@ -44,6 +44,10 @@ abstract class Resource extends NovaResource
 
     public function mergeFilters(array $filters)
     {
+        if (! ($this->resource instanceof ShouldCollectStatus)) {
+            return $filters;
+        }
+
         return [
             EnumFilter::make(__('Status'), 'status', get_class($this->resource->status)),
             ...$filters,
