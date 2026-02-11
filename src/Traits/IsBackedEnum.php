@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\JsonEncodingException;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rules\Enum as EnumValidationRule;
 use Perfocard\Flow\Contracts\BackedEnum;
+use Perfocard\Flow\Contracts\HasComponent;
 
 use function get_class;
 use function json_encode;
@@ -112,12 +113,19 @@ trait IsBackedEnum
     {
         static::ensureImplementsInterface();
 
-        return [
+        $data = [
             'name' => $this->name,
             'value' => $this->value,
             'label' => $this->label(),
             'meta' => $this->withMeta(),
         ];
+
+        if ($this instanceof HasComponent) {
+            $data['is_loading'] = in_array($this, $this::loading(), true);
+            $data['is_failed'] = in_array($this, $this::failed(), true);
+        }
+
+        return $data;
     }
 
     public function toHtml(): string
