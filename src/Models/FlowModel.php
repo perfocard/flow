@@ -131,7 +131,10 @@ class FlowModel extends Model
                 $model->statuses()->delete();
             }
         });
+    }
 
+    protected static function booted()
+    {
         static::observe(ModelObserver::class);
     }
 
