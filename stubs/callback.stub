@@ -2,10 +2,9 @@
 
 namespace {{ namespace }};
 
-{{ statusUse }}use Illuminate\Http\Request;
+{{ modelUse }}{{ statusUse }}use Illuminate\Http\Request;
 use Perfocard\Flow\Contracts\BackedEnum;
 use Perfocard\Flow\FlowCallback;
-use Perfocard\Flow\Models\FlowModel;
 
 class {{ class }} extends FlowCallback
 {
@@ -15,7 +14,7 @@ class {{ class }} extends FlowCallback
      * The system will verify this status before processing and will raise an
      * error if the current resource status does not match it.
      */
-    public function initial(FlowModel $model, Request $request): BackedEnum
+    public function initial({{ modelType }} ${{ modelVar }}, Request $request): BackedEnum
     {
         {{ statusInitial }}
     }
@@ -25,7 +24,7 @@ class {{ class }} extends FlowCallback
      *
      * The system will assign this status to the resource when processing begins.
      */
-    public function processing(FlowModel $model, Request $request): BackedEnum
+    public function processing({{ modelType }} ${{ modelVar }}, Request $request): BackedEnum
     {
         {{ statusProcessing }}
     }
@@ -35,7 +34,7 @@ class {{ class }} extends FlowCallback
      *
      * The system will assign this status to the resource if processing finishes with an error.
      */
-    public function failed(FlowModel $model, Request $request): BackedEnum
+    public function failed({{ modelType }} ${{ modelVar }}, Request $request): BackedEnum
     {
         {{ statusError }}
     }
@@ -46,7 +45,7 @@ class {{ class }} extends FlowCallback
      * Define the final status that the system will assign to the resource
      * after successful processing.
      */
-    public function complete(FlowModel $model, Request $request): BackedEnum
+    public function complete({{ modelType }} ${{ modelVar }}, Request $request): BackedEnum
     {
         {{ statusComplete }}
     }
@@ -54,7 +53,7 @@ class {{ class }} extends FlowCallback
     /**
      * Return the sanitizer class name to use, or null to use default.
      */
-    public function sanitizer(FlowModel $model, Request $request): ?string
+    public function sanitizer({{ modelType }} ${{ modelVar }}, Request $request): ?string
     {
         return null;
     }
@@ -62,10 +61,10 @@ class {{ class }} extends FlowCallback
     /**
      * Handle the callback logic and return the (possibly modified) model.
      */
-    public function handle(FlowModel $model, Request $request): FlowModel
+    public function handle({{ modelType }} ${{ modelVar }}, Request $request): {{ modelType }}
     {
         // Handle the callback logic here
 
-        return $model;
+        return ${{ modelVar }};
     }
 }
