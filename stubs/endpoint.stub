@@ -2,10 +2,9 @@
 
 namespace {{ namespace }};
 
-{{ statusUse }}use Illuminate\Http\Client\Response;
+{{ modelUse }}{{ statusUse }}use Illuminate\Http\Client\Response;
 use Perfocard\Flow\Contracts\BackedEnum;
 use Perfocard\Flow\FlowEndpoint;
-use Perfocard\Flow\Models\FlowModel;
 
 class {{ class }} extends FlowEndpoint
 {
@@ -28,7 +27,7 @@ class {{ class }} extends FlowEndpoint
     /**
      * Determine the HTTP method for the request.
      */
-    public function method(FlowModel $model): string
+    public function method({{ modelType }} ${{ modelVar }}): string
     {
         return 'POST';
     }
@@ -36,7 +35,7 @@ class {{ class }} extends FlowEndpoint
     /**
      * Get the URL to which the request should be sent.
      */
-    public function url(FlowModel $model): string
+    public function url({{ modelType }} ${{ modelVar }}): string
     {
         return '';
     }
@@ -46,7 +45,7 @@ class {{ class }} extends FlowEndpoint
      *
      * @return array<string, mixed>
      */
-    public function buildPayload(FlowModel $model): array
+    public function buildPayload({{ modelType }} ${{ modelVar }}): array
     {
         return [];
     }
@@ -63,10 +62,10 @@ class {{ class }} extends FlowEndpoint
     /**
      * Process the API response and update the model.
      */
-    public function processResponse(Response $response, FlowModel $model): FlowModel
+    public function processResponse(Response $response, {{ modelType }} ${{ modelVar }}): {{ modelType }}
     {
         // Handle the endpoint logic here
 
-        return $model;
+        return ${{ modelVar }};
     }
 }

@@ -42,12 +42,26 @@ class EndpointMakeCommand extends GeneratorCommand
 
         $stub = str_replace('{{ class }}', $this->argument('name'), $stub);
 
-        // additional replacements for statuses if -m|--model was provided
         [$statusUse, $statusProcessing, $statusComplete] = $this->buildStatusReplacements();
+        [$modelUse, $modelType, $modelVar] = $this->buildModelReplacements();
 
         $stub = str_replace(
-            ['{{ statusUse }}', '{{ statusProcessing }}', '{{ statusComplete }}'],
-            [$statusUse, $statusProcessing, $statusComplete],
+            [
+                '{{ statusUse }}',
+                '{{ statusProcessing }}',
+                '{{ statusComplete }}',
+                '{{ modelUse }}',
+                '{{ modelType }}',
+                '{{ modelVar }}',
+            ],
+            [
+                $statusUse,
+                $statusProcessing,
+                $statusComplete,
+                $modelUse,
+                $modelType,
+                $modelVar,
+            ],
             $stub
         );
 
@@ -64,35 +78,64 @@ class EndpointMakeCommand extends GeneratorCommand
         $model = $this->option('model');
 
         if (! $model) {
-            // if no model provided — remove use and leave TODOs in methods
             return [
-                '', // {{ statusUse }}
+                '',
                 '/* TODO: return YourStatusEnum::PROCESSING; */',
                 '/* TODO: return YourStatusEnum::COMPLETE; */',
             ];
         }
 
-        // Normalize the path (Foo/Bar -> Foo\\Bar)
+        $qualifiedModel = $this->qualifyModelClass($model);
+        $statusFqcn = preg_replace('/\\\\([^\\\\]+)$/', '\\\\$1Status', $qualifiedModel);
+        $statusClass = class_basename($statusFqcn);
+
+        return [
+            'use '.$statusFqcn.";\n",
+            'return '.$statusClass.'::PROCESSING;',
+            'return '.$statusClass.'::COMPLETE;',
+        ];
+    }
+
+    /**
+     * Return model use / type / variable for method signatures.
+     *
+     * @return array{string,string,string}
+     */
+    protected function buildModelReplacements(): array
+    {
+        $model = $this->option('model');
+
+        if (! $model) {
+            return [
+                "use Perfocard\\Flow\\Models\\FlowModel;\n",
+                'FlowModel',
+                'model',
+            ];
+        }
+
+        $qualifiedModel = $this->qualifyModelClass($model);
+        $modelClass = class_basename($qualifiedModel);
+
+        return [
+            'use '.$qualifiedModel.";\n",
+            $modelClass,
+            Str::camel($modelClass),
+        ];
+    }
+
+    /**
+     * Resolve a model option to a fully-qualified class name.
+     */
+    protected function qualifyModelClass(string $model): string
+    {
         $model = Str::replace('/', '\\', trim($model, '\\'));
 
-        // Determine the root namespace for models (App\\Models or App\\)
         $rootNamespace = $this->laravel->getNamespace();
         $modelsRoot = is_dir(app_path('Models'))
             ? $rootNamespace.'Models\\'
             : $rootNamespace;
 
-        // If the user already provided a full FQCN — do not prefix
-        $qualifiedModel = Str::startsWith($model, $rootNamespace) ? $model : $modelsRoot.$model;
-
-        // Status class: <LastSegment>Status (Foo\\Bar -> Foo\\BarStatus)
-        $statusFqcn = preg_replace('/\\\\([^\\\\]+)$/', '\\\\$1Status', $qualifiedModel);
-        $statusClass = class_basename($statusFqcn);
-
-        $statusUse = 'use '.$statusFqcn.";\n";
-        $statusProcessing = 'return '.$statusClass.'::PROCESSING;';
-        $statusComplete = 'return '.$statusClass.'::COMPLETE;';
-
-        return [$statusUse, $statusProcessing, $statusComplete];
+        return Str::startsWith($model, $rootNamespace) ? $model : $modelsRoot.$model;
     }
 
     protected function getStub()

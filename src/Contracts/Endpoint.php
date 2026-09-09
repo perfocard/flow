@@ -11,15 +11,15 @@ interface Endpoint
 
     public function complete(): BackedEnum;
 
-    public function url(FlowModel $model): string;
+    public function url($model): string;
 
-    public function method(FlowModel $model): string;
+    public function method($model): string;
 
-    public function headers(FlowModel $model): array;
+    public function headers($model): array;
 
-    public function buildPayload(FlowModel $model): array;
+    public function buildPayload($model): array;
 
-    public function processResponse(Response $response, FlowModel $model): FlowModel;
+    public function processResponse(Response $response, $model): FlowModel;
 
     public function sanitizer(): ?string;
 }
