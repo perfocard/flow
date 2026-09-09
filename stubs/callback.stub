@@ -7,7 +7,7 @@ use Perfocard\Flow\Contracts\BackedEnum;
 use Perfocard\Flow\FlowCallback;
 use Perfocard\Flow\Models\FlowModel;
 
-class PaymentCallback extends FlowCallback
+class {{ class }} extends FlowCallback
 {
     /**
      * Return the initial status for the callback.
@@ -54,7 +54,7 @@ class PaymentCallback extends FlowCallback
     /**
      * Return the sanitizer class name to use, or null to use default.
      */
-    public function sanitizer(): ?string
+    public function sanitizer(FlowModel $model, Request $request): ?string
     {
         return null;
     }

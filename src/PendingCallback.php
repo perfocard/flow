@@ -7,6 +7,7 @@ use Perfocard\Flow\Contracts\Callback;
 use Perfocard\Flow\Models\FlowModel;
 use Perfocard\Flow\Models\StatusType;
 use Perfocard\Flow\Support\HttpMessageFormatter;
+use Perfocard\Flow\Support\Sanitizer;
 use RuntimeException;
 use Throwable;
 
@@ -89,11 +90,9 @@ class PendingCallback
             'http_version' => '1.1',
         ];
 
-        // If the callback provides a sanitizer class, apply it to the request data
-        if ($this->callback->sanitizer($this->model, $this->request)) {
-            $sanitizerClass = $this->callback->sanitizer($this->model, $this->request);
-            $sanitizer = new $sanitizerClass;
+        $sanitizer = $this->resolveSanitizer();
 
+        if ($sanitizer) {
             $requestData = $sanitizer->apply($requestData);
         }
 
@@ -125,5 +124,19 @@ class PendingCallback
         $model->setStatusAndSave(
             status: $this->callback->complete($this->model, $this->request),
         );
+    }
+
+    /**
+     * Resolve the callback sanitizer once for this dispatch.
+     */
+    protected function resolveSanitizer(): ?Sanitizer
+    {
+        $sanitizerClass = $this->callback->sanitizer($this->model, $this->request);
+
+        if (! $sanitizerClass) {
+            return null;
+        }
+
+        return new $sanitizerClass;
     }
 }

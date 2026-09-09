@@ -50,6 +50,9 @@ Use cases:
     - [3.8 Using a Task](#38-using-a-task)
     - [3.9 Using an Endpoint](#39-using-an-endpoint)
       - [Example of using an Endpoint in a listener](#example-of-using-an-endpoint-in-a-listener)
+    - [3.10 Using a Callback](#310-using-a-callback)
+      - [Example of using a Callback in a controller](#example-of-using-a-callback-in-a-controller)
+    - [3.11 Sanitizers](#311-sanitizers)
   - [4. Laravel Nova integration](#4-laravel-nova-integration)
     - [4.1 Status resource](#41-status-resource)
     - [4.2 Status field](#42-status-field)
@@ -78,12 +81,14 @@ composer require perfocard/flow
 
 The package publishes the following stubs:
 
+- `callback.stub`
 - `endpoint.stub`
 - `enum.stub`
+- `event.stub`
 - `listener.queued.stub`
 - `listener.typed.queued.stub`
-- `migration.create.stub`
 - `model.stub`
+- `sanitizer.stub`
 - `status.stub`
 - `task.stub`
 - `nova/resource.stub`
@@ -466,9 +471,15 @@ Example implementation:
 ```php
 // app/Endpoints/ExternalDocumentContent.php
 
-use App\Models\DocumentStatus;
+namespace App\Endpoints;
 
-class ExternalDocumentContent
+use App\Models\DocumentStatus;
+use Illuminate\Http\Client\Response;
+use Perfocard\Flow\Contracts\BackedEnum;
+use Perfocard\Flow\FlowEndpoint;
+use Perfocard\Flow\Models\FlowModel;
+
+class ExternalDocumentContent extends FlowEndpoint
 {
     public function processing(): BackedEnum
     {
@@ -497,9 +508,15 @@ class ExternalDocumentContent
         ];
     }
 
+    public function sanitizer(): ?string
+    {
+        return null;
+    }
+
     public function processResponse(Response $response, FlowModel $model): FlowModel
     {
         $model->content = $response->json('content');
+
         return $model;
     }
 }
@@ -537,7 +554,98 @@ class ProcessQueuedDocument extends ThrowableListener
 }
 ```
 
-In this case, the status will automatically be set to `PROCESSING` before the call and to `COMPLETE` after it finishes. Additionally, the request payload and the response are automatically saved to the `payload` field of the corresponding status record.
+In this case, the status will automatically be set to `PROCESSING` before the call and to `COMPLETE` after it finishes. The outgoing request is stored as a curl-like log (`StatusType::REQUEST`) and the response as an HTTP message (`StatusType::RESPONSE`). On HTTP or processing failure, Flow records an `EXCEPTION` payload (keeping `PROCESSING`) and rethrows so the listener `failed()` method can move the model to `ERROR`.
+
+### 3.10 Using a Callback
+
+Callbacks handle inbound webhooks (or similar HTTP hits) against a Flow model. Generate a callback class:
+
+```bash
+php artisan make:callback PaymentCallback -m Payment
+```
+
+This will create `app/Callbacks/PaymentCallback.php`.
+
+Example implementation:
+
+```php
+// app/Callbacks/PaymentCallback.php
+
+namespace App\Callbacks;
+
+use App\Models\PaymentStatus;
+use Illuminate\Http\Request;
+use Perfocard\Flow\Contracts\BackedEnum;
+use Perfocard\Flow\FlowCallback;
+use Perfocard\Flow\Models\FlowModel;
+
+class PaymentCallback extends FlowCallback
+{
+    public function initial(FlowModel $model, Request $request): BackedEnum
+    {
+        return PaymentStatus::PENDING;
+    }
+
+    public function processing(FlowModel $model, Request $request): BackedEnum
+    {
+        return PaymentStatus::PROCESSING;
+    }
+
+    public function failed(FlowModel $model, Request $request): BackedEnum
+    {
+        return PaymentStatus::FAILED;
+    }
+
+    public function complete(FlowModel $model, Request $request): BackedEnum
+    {
+        return PaymentStatus::COMPLETE;
+    }
+
+    public function sanitizer(FlowModel $model, Request $request): ?string
+    {
+        return null;
+    }
+
+    public function handle(FlowModel $model, Request $request): FlowModel
+    {
+        // Apply inbound payload to the model
+
+        return $model;
+    }
+}
+```
+
+#### Example of using a Callback in a controller
+
+```php
+use App\Callbacks\PaymentCallback;
+use App\Models\Payment;
+use Illuminate\Http\Request;
+use Perfocard\Flow\Callback;
+
+public function update(Request $request, Payment $payment)
+{
+    Callback::for(PaymentCallback::class)
+        ->on($payment)
+        ->withRequest($request)
+        ->dispatch();
+
+    return response()->noContent();
+}
+```
+
+Dispatch asserts the model is still in `initial()`, records the inbound request as `StatusType::CALLBACK` under `processing()`, runs `handle()`, then sets `complete()`. On exception it sets `failed()` with `StatusType::EXCEPTION` and rethrows.
+
+### 3.11 Sanitizers
+
+Sensitive fields in logged status payloads can be redacted with a sanitizer. Generate one for an endpoint or callback:
+
+```bash
+php artisan make:sanitizer ExternalDocumentContent -e
+php artisan make:sanitizer PaymentCallback -c
+```
+
+Return the sanitizer FQCN from `sanitizer()` on the endpoint or callback. Masking applies only to the data stored on status records (curl / HTTP message logs), not to the live outbound HTTP body or the real inbound request handling.
 
 ## 4. Laravel Nova integration
 

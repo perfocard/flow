@@ -48,9 +48,7 @@ final class HttpMessageFormatter
 
         // Start-line + headers + CRLF + body
         $lines = [];
-        $lines[] = sprintf('HTTP/%s %s %s', $version, $method, $requestTarget); // format “HTTP/x METHOD path”; to use classic order, switch to "%s %s HTTP/%s"
-        // if you prefer the classic format “METHOD /path HTTP/1.1”, use:
-        // $lines[] = sprintf('%s %s HTTP/%s', $method, $requestTarget, $version);
+        $lines[] = sprintf('%s %s HTTP/%s', $method, $requestTarget, $version);
 
         foreach (self::iterateHeaderLines($headers) as $hline) {
             $lines[] = $hline;

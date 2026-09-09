@@ -2,6 +2,7 @@
 
 namespace Perfocard\Flow;
 
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Perfocard\Flow\Contracts\Endpoint;
@@ -9,6 +10,9 @@ use Perfocard\Flow\Models\FlowModel;
 use Perfocard\Flow\Models\StatusType;
 use Perfocard\Flow\Support\CurlFormatter;
 use Perfocard\Flow\Support\HttpMessageFormatter;
+use Perfocard\Flow\Support\Sanitizer;
+use RuntimeException;
+use Throwable;
 
 class PendingEndpoint
 {
@@ -45,27 +49,33 @@ class PendingEndpoint
      */
     public function dispatch()
     {
-        $payload = $this->endpoint->buildPayload($this->model);
+        if (! $this->model) {
+            throw new RuntimeException('Model not set for PendingEndpoint');
+        }
 
+        $payload = $this->endpoint->buildPayload($this->model);
         $method = Str::upper($this->endpoint->method($this->model));
+        $url = $this->endpoint->url($this->model);
+        $headers = $this->endpoint->headers($this->model);
+
+        // Non-GET requests are sent as JSON; ensure the logged curl matches.
+        if ($method !== 'GET' && ! $this->hasHeader($headers, 'Content-Type')) {
+            $headers['Content-Type'] = 'application/json';
+        }
 
         $requestData = [
-            'url' => $this->endpoint->url($this->model),
+            'url' => $url,
             'method' => $method,
-            'headers' => $this->endpoint->headers($this->model),
+            'headers' => $headers,
             'payload' => $payload,
         ];
 
-        if ($this->endpoint->sanitizer()) {
-            $sanitizerClass = $this->endpoint->sanitizer();
-            $sanitizer = new $sanitizerClass;
+        $sanitizer = $this->resolveSanitizer();
 
+        if ($sanitizer) {
             $requestData = $sanitizer->apply($requestData);
-
-            // Build a human-friendly curl-like command for logging
             $requestData = CurlFormatter::build($requestData, $sanitizer->maskChar());
         } else {
-            // Build a human-friendly curl-like command for logging
             $requestData = CurlFormatter::build($requestData);
         }
 
@@ -77,30 +87,39 @@ class PendingEndpoint
 
         $options = [];
 
-        if ($method == 'GET') {
+        if ($method === 'GET') {
             $options['query'] = $payload;
         } else {
             $options['json'] = $payload;
         }
 
-        $response = Http::withHeaders($this->endpoint->headers($this->model))
-            ->send($method, $this->endpoint->url($this->model), $options)
-            ->throw();
+        try {
+            $response = Http::withHeaders($headers)
+                ->send($method, $url, $options)
+                ->throw();
+        } catch (Throwable $exception) {
+            $this->recordException($exception);
 
-        $this->model = $this->endpoint->processResponse($response, $this->model);
+            throw $exception;
+        }
+
+        try {
+            $this->model = $this->endpoint->processResponse($response, $this->model);
+        } catch (Throwable $exception) {
+            $this->recordException($exception);
+
+            throw $exception;
+        }
 
         $responseData = [
             'status' => $response->status(),
-            'reason' => $response->reason(), // Laravel 11 provides the reason phrase
-            'headers' => $response->headers(), // already in format ['Header'=>['v1','v2']]
-            'payload' => $response->body(),    // raw body as string
-            'http_version' => '1.1', // Laravel does not store HTTP version by default; assume 1.1
+            'reason' => $response->reason(),
+            'headers' => $response->headers(),
+            'payload' => $response->body(),
+            'http_version' => '1.1',
         ];
 
-        if ($this->endpoint->sanitizer()) {
-            $sanitizerClass = $this->endpoint->sanitizer();
-            $sanitizer = new $sanitizerClass;
-
+        if ($sanitizer) {
             $responseData = $sanitizer->apply($responseData);
         }
 
@@ -111,5 +130,57 @@ class PendingEndpoint
             payload: $responseData,
             type: StatusType::RESPONSE,
         );
+    }
+
+    /**
+     * Resolve the endpoint sanitizer once for this dispatch.
+     */
+    protected function resolveSanitizer(): ?Sanitizer
+    {
+        $sanitizerClass = $this->endpoint->sanitizer();
+
+        if (! $sanitizerClass) {
+            return null;
+        }
+
+        return new $sanitizerClass;
+    }
+
+    /**
+     * Whether the header map already includes the given name (case-insensitive).
+     */
+    protected function hasHeader(array $headers, string $name): bool
+    {
+        foreach ($headers as $key => $value) {
+            if (is_int($key) && is_string($value) && str_contains($value, ':')) {
+                [$headerName] = explode(':', $value, 2);
+                if (strcasecmp(trim($headerName), $name) === 0) {
+                    return true;
+                }
+            } elseif (is_string($key) && strcasecmp($key, $name) === 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Record an EXCEPTION status payload without changing the domain status
+     * or re-dispatching status events. Listener failed() still owns ERROR.
+     */
+    protected function recordException(Throwable $exception): void
+    {
+        $payload = (string) $exception;
+
+        if ($exception instanceof RequestException && $exception->response) {
+            $payload = $exception->response->body() ?: $payload;
+        }
+
+        $this->model->statuses()->create([
+            'status' => $this->endpoint->processing(),
+            'payload' => $payload,
+            'type' => StatusType::EXCEPTION,
+        ]);
     }
 }

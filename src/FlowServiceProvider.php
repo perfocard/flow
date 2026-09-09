@@ -43,6 +43,10 @@ class FlowServiceProvider extends ServiceProvider
                 __DIR__.'/../stubs/listener.typed.queued.stub' => base_path('stubs/listener.typed.queued.stub'),
                 __DIR__.'/../stubs/status.stub' => base_path('stubs/status.stub'),
                 __DIR__.'/../stubs/model.stub' => base_path('stubs/model.stub'),
+                __DIR__.'/../stubs/endpoint.stub' => base_path('stubs/endpoint.stub'),
+                __DIR__.'/../stubs/callback.stub' => base_path('stubs/callback.stub'),
+                __DIR__.'/../stubs/sanitizer.stub' => base_path('stubs/sanitizer.stub'),
+                __DIR__.'/../stubs/task.stub' => base_path('stubs/task.stub'),
             ], 'stubs');
 
             $this->publishes([
