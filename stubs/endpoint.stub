@@ -8,6 +8,10 @@ use Perfocard\Flow\FlowEndpoint;
 
 class {{ class }} extends FlowEndpoint
 {
+    // Optional: implements \Perfocard\Flow\Contracts\Idempotent when this
+    // endpoint applies an external verdict (e.g. ProbeEndpoint) — claim via
+    // Idempotency::claim() before writing the parent status.
+
     /**
      * Get the status representing the processing state.
      */

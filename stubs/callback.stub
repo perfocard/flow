@@ -8,6 +8,9 @@ use Perfocard\Flow\FlowCallback;
 
 class {{ class }} extends FlowCallback
 {
+    // Optional: implements \Perfocard\Flow\Contracts\Idempotent
+    // with fingerprintScope(), fingerprint(), fingerprintLifetime() for dedupe.
+
     /**
      * Return the initial status for the callback.
      *

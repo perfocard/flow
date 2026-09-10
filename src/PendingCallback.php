@@ -4,9 +4,12 @@ namespace Perfocard\Flow;
 
 use Illuminate\Http\Request;
 use Perfocard\Flow\Contracts\Callback;
+use Perfocard\Flow\Contracts\Idempotent;
 use Perfocard\Flow\Models\FlowModel;
+use Perfocard\Flow\Models\IdempotencyKey;
 use Perfocard\Flow\Models\StatusType;
 use Perfocard\Flow\Support\HttpMessageFormatter;
+use Perfocard\Flow\Support\Idempotency;
 use Perfocard\Flow\Support\Sanitizer;
 use RuntimeException;
 use Throwable;
@@ -22,6 +25,11 @@ class PendingCallback
      * The HTTP request associated with the callback.
      */
     protected ?Request $request = null;
+
+    /**
+     * Soft-return on invalid initial status instead of throwing.
+     */
+    protected bool $silent = false;
 
     /**
      * Create a new PendingCallback wrapper for the given callback.
@@ -57,10 +65,24 @@ class PendingCallback
     }
 
     /**
-     * Dispatch the callback: validate initial status, record processing
-     * payload, call the handler, and record result or exception.
+     * Soft-return when the model is not in initial() status (e.g. provider retries).
+     * Duplicate idempotency claims always soft-return regardless of this flag.
+     * Exceptions from handle() are never swallowed.
      *
-     * @throws \RuntimeException if request or model is missing or status invalid
+     * @return $this
+     */
+    public function silent(): self
+    {
+        $this->silent = true;
+
+        return $this;
+    }
+
+    /**
+     * Dispatch the callback: optional idempotency claim, validate initial status,
+     * record processing payload, call the handler, and record result or exception.
+     *
+     * @throws \RuntimeException if request or model is missing or status invalid (unless silent)
      * @throws \Throwable to bubble up any exception from the handler
      */
     public function dispatch()
@@ -73,7 +95,25 @@ class PendingCallback
             throw new RuntimeException('Model not set for PendingCallback');
         }
 
+        $claim = null;
+
+        if ($this->callback instanceof Idempotent) {
+            $claim = Idempotency::claim($this->callback, $this->model, $this->request);
+
+            if ($claim === null) {
+                return;
+            }
+        }
+
         if ($this->model->status != $this->callback->initial($this->model, $this->request)) {
+            if ($claim instanceof IdempotencyKey) {
+                Idempotency::release($claim);
+            }
+
+            if ($this->silent) {
+                return;
+            }
+
             throw new RuntimeException('Cannot process callback: invalid status '.$this->model->status->name);
         }
 
@@ -110,6 +150,10 @@ class PendingCallback
             // Execute the callback handler
             $model = $this->callback->handle($this->model, $this->request);
         } catch (Throwable $exception) {
+            if ($claim instanceof IdempotencyKey) {
+                Idempotency::release($claim);
+            }
+
             // On exception, record error status and exception payload, then rethrow
             $this->model->setStatusAndSave(
                 status: $this->callback->failed($this->model, $this->request),

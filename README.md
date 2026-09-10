@@ -52,6 +52,7 @@ Use cases:
       - [Example of using an Endpoint in a listener](#example-of-using-an-endpoint-in-a-listener)
     - [3.10 Using a Callback](#310-using-a-callback)
       - [Example of using a Callback in a controller](#example-of-using-a-callback-in-a-controller)
+      - [Idempotent callbacks and probes](#idempotent-callbacks-and-probes)
     - [3.11 Sanitizers](#311-sanitizers)
   - [4. Laravel Nova integration](#4-laravel-nova-integration)
     - [4.1 Status resource](#41-status-resource)
@@ -623,18 +624,53 @@ use App\Models\Payment;
 use Illuminate\Http\Request;
 use Perfocard\Flow\Callback;
 
-public function update(Request $request, Payment $payment)
+public function handle(Request $request, Payment $payment)
 {
     Callback::for(PaymentCallback::class)
         ->on($payment)
         ->withRequest($request)
+        ->silent()
         ->dispatch();
 
-    return response()->noContent();
+    return response()->json(['ok' => true]);
 }
 ```
 
 Dispatch asserts the model is still in `initial()`, records the inbound request as `StatusType::CALLBACK` under `processing()`, runs `handle()`, then sets `complete()`. On exception it sets `failed()` with `StatusType::EXCEPTION` and rethrows.
+
+`silent()` soft-returns when the model is not in `initial()` (typical provider retries after success) instead of throwing a 500. Missing request/model still throw. Exceptions from `handle()` are never swallowed.
+
+#### Idempotent callbacks and probes
+
+Opt in with `Perfocard\Flow\Contracts\Idempotent` on the Callback and, for probes, on the `ProbeEndpoint` that writes the parent verdict. Shared methods:
+
+- `fingerprintScope()` — stable provider id (same string on Callback and Probe)
+- `fingerprint($model, $source)` — event identity only (`Request` or `Response`)
+- `fingerprintLifetime()` — minutes until `expires_at` (often `config('flow.idempotency.timeout')`)
+
+Flow stores `sha256(scope + "\0" + fingerprint)` in `idempotency_keys`. `PendingCallback` claims automatically before `initial()`. A duplicate claim soft-returns always (even without `silent()`). On `handle()` failure the claim is released so the provider can retry.
+
+Probe endpoints must claim explicitly before writing the parent (do not claim on «still waiting»):
+
+```php
+use Perfocard\Flow\Support\Idempotency;
+
+$claim = Idempotency::claim($this, $probe->payment, $response);
+
+if ($claim === null) {
+    return $probe; // duplicate verdict
+}
+
+$probe->payment->setStatusAndSave(status: PaymentStatus::COMPLETE);
+```
+
+Prune expired rows:
+
+```bash
+php artisan flow:idempotency:prune
+```
+
+`flow:install` publishes the `idempotency_keys` migration stub alongside statuses.
 
 ### 3.11 Sanitizers
 

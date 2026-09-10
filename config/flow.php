@@ -62,6 +62,20 @@ return [
         'timeout' => env('FLOW_PURGE_TIMEOUT', 60 * 24 * 2),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Idempotency Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Deduplicates Callback / Probe verdict writes via hashed fingerprints.
+    | 'timeout' is the default fingerprintLifetime in minutes (expires_at).
+    */
+    'idempotency' => [
+        'table' => 'idempotency_keys',
+        'model' => \Perfocard\Flow\Models\IdempotencyKey::class,
+        'timeout' => env('FLOW_IDEMPOTENCY_TIMEOUT', 60 * 24 * 7),
+    ],
+
     // 'probes' => [
     //     \App\Models\Payment::class => [
     //         'probe_model' => \App\Models\Payment\Probe::class,
