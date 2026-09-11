@@ -9,8 +9,9 @@ use Perfocard\Flow\FlowEndpoint;
 class {{ class }} extends FlowEndpoint
 {
     // Optional: implements \Perfocard\Flow\Contracts\Idempotent when this
-    // endpoint applies an external verdict (e.g. ProbeEndpoint) — claim via
-    // Idempotency::claim() before writing the parent status.
+    // endpoint applies an external verdict (e.g. ProbeEndpoint) — guard the
+    // parent write with Idempotency::allows($this, $response, $status);
+    // only guarded() statuses are deduped.
 
     /**
      * The model this endpoint operates on.

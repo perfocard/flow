@@ -72,7 +72,7 @@ class PendingCallback
 
     /**
      * Soft-return when the model is not in initial() status (e.g. provider retries).
-     * Duplicate idempotency claims always soft-return regardless of this flag.
+     * Duplicate claims on a guarded status always soft-return regardless of this flag.
      * Exceptions from handle() are never swallowed.
      *
      * @return $this
@@ -85,8 +85,12 @@ class PendingCallback
     }
 
     /**
-     * Dispatch the callback: optional idempotency claim, validate initial status,
+     * Dispatch the callback: resolve the status this hit lands on, claim an
+     * idempotency key only when that status is guarded, validate initial status,
      * record processing payload, call the handler, and record result or exception.
+     *
+     * complete($request) is resolved before handle(), so it must derive the
+     * status from the request alone.
      *
      * @throws RuntimeException if request or model is missing or status invalid (unless silent)
      * @throws Throwable to bubble up any exception from the handler
@@ -103,11 +107,15 @@ class PendingCallback
 
         $this->callback = HandlerResolver::resolve($this->callbackClass, $this->model);
 
+        // The status this hit resolves to; decides whether dedupe applies at all
+        $complete = $this->callback->complete($this->request);
+
         $claim = null;
 
-        if ($this->callback instanceof Idempotent) {
-            $claim = Idempotency::claim($this->callback, $this->request);
+        if ($this->callback instanceof Idempotent && Idempotency::guards($this->callback, $complete)) {
+            $claim = Idempotency::claim($this->callback, $this->request, $complete);
 
+            // Duplicate of a guarded status: nothing is written, nothing runs
             if ($claim === null) {
                 return;
             }
@@ -172,9 +180,9 @@ class PendingCallback
             throw $exception;
         }
 
-        // On success, set the final status
+        // On success, set the status resolved up front
         $this->model->setStatusAndSave(
-            status: $this->callback->complete($this->request),
+            status: $complete,
         );
     }
 

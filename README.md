@@ -695,23 +695,36 @@ Dispatch asserts the model is still in `initial()`, records the inbound request 
 Opt in with `Perfocard\Flow\Contracts\Idempotent` on the Callback and, for probes, on the `ProbeEndpoint` that writes the parent verdict. Shared methods:
 
 - `fingerprintScope()` — stable provider id (same string on Callback and Probe)
-- `fingerprint($source)` — event identity only (`Request` or `Response`); the model is `$this->{leaf}`
+- `fingerprint($source)` — event identity only (`Request` or `Response`); the model is `$this->{leaf}`. Do not put the status in here — Flow adds it
 - `fingerprintLifetime()` — minutes until `expires_at` (often `config('flow.idempotency.timeout')`)
+- `guarded()` — the status cases that must be reached once (final / business-affecting, e.g. `COMPLETE`, `FAILED`)
 
-Flow stores `sha256(scope + "\0" + fingerprint)` in `idempotency_keys`. `PendingCallback` claims automatically before `initial()`. A duplicate claim soft-returns always (even without `silent()`). On `handle()` failure the claim is released so the provider can retry.
+Dedupe applies **only** to hits that resolve to a `guarded()` status. A callback or probe that lands on any other case — a payment still `PENDING`, a poll that answers «still waiting» — is processed and logged as usual, every time, with no claim. That keeps the admin history honest for long-running intermediate states while a final verdict still lands exactly once.
 
-Probe endpoints must claim explicitly before writing the parent (do not claim on «still waiting»):
+Flow stores `sha256(scope + "\0" + status class + "\0" + status value + "\0" + fingerprint)` in `idempotency_keys`, so the same identity on the same status yields the same hash. `PendingCallback` resolves `complete($request)` first, claims when that status is guarded, then asserts `initial()`. A duplicate claim soft-returns always (even without `silent()`). On `handle()` failure the claim is released so the provider can retry. Because `complete()` runs before `handle()`, derive the status from the request alone.
+
+```php
+public function guarded(): array
+{
+    return [
+        PaymentStatus::COMPLETE,
+        PaymentStatus::FAILED,
+    ];
+}
+```
+
+Probe endpoints wrap the parent write with `Idempotency::allows()`: it returns `true` when the status is not guarded or the claim was taken, `false` on a duplicate.
 
 ```php
 use Perfocard\Flow\Support\Idempotency;
 
-$claim = Idempotency::claim($this, $response);
+$status = $this->map($response->json('state'));
 
-if ($claim === null) {
+if (! Idempotency::allows($this, $response, $status)) {
     return $this->probe; // duplicate verdict
 }
 
-$this->probe->payment->setStatusAndSave(status: PaymentStatus::COMPLETE);
+$this->probe->payment->setStatusAndSave(status: $status, type: StatusType::PROBE);
 ```
 
 Prune expired rows:
