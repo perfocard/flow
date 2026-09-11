@@ -23,6 +23,26 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Endpoint Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Default outbound HTTP timeouts for every FlowEndpoint, in seconds. An
+    | endpoint overrides timeout() / connectTimeout() only when the remote API
+    | is genuinely slower or faster than these. There is no retry knob here on
+    | purpose: repeating a state-changing request without an idempotency key is
+    | a double charge. Retries belong to the listener ($tries / $backoff) and
+    | to defibrillation.
+    */
+    'endpoint' => [
+        // Seconds to wait for the response
+        'timeout' => env('FLOW_ENDPOINT_TIMEOUT', 30),
+
+        // Seconds to wait for the connection
+        'connect_timeout' => env('FLOW_ENDPOINT_CONNECT_TIMEOUT', 10),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Compression Configuration
     |--------------------------------------------------------------------------
     |

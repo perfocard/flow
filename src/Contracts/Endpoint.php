@@ -17,6 +17,12 @@ interface Endpoint
 
     public function headers(): array;
 
+    public function timeout(): int;
+
+    public function connectTimeout(): int;
+
+    public function throw(): bool;
+
     public function buildPayload(): array;
 
     public function processResponse(Response $response): FlowModel;

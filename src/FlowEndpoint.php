@@ -19,6 +19,33 @@ abstract class FlowEndpoint implements Endpoint
     }
 
     /**
+     * Seconds to wait for the response. Override when the remote API is
+     * genuinely slower or faster than the configured default.
+     */
+    public function timeout(): int
+    {
+        return (int) config('flow.endpoint.timeout', 30);
+    }
+
+    /**
+     * Seconds to wait for the connection itself.
+     */
+    public function connectTimeout(): int
+    {
+        return (int) config('flow.endpoint.connect_timeout', 10);
+    }
+
+    /**
+     * Whether a 4xx/5xx response should throw instead of reaching
+     * processResponse(). Override with false only when the error body
+     * carries a business verdict this endpoint has to read.
+     */
+    public function throw(): bool
+    {
+        return true;
+    }
+
+    /**
      * Return the sanitizer class name to use for this endpoint, or null to
      * use the default behavior.
      */

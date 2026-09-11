@@ -10,7 +10,7 @@ Overview:
 - Automatic archiving of large payloads to remote storage (ZIP) to reduce database size, with restore and purge capabilities.
 - Integration with Laravel Nova: built-in resources, a status field, actions (Compress / Restore / Purge / Defibrillate) and universal metrics.
 - Support for asynchronous processing via Tasks, Endpoints and queued listeners/jobs; includes stubs for quick setup.
-- Installer that publishes configuration and stubs, plus scheduler commands (`flow:compress`, `flow:purge`).
+- Installer that publishes configuration and stubs, plus scheduler commands (`flow:compress`, `flow:purge`, `flow:probe`, `flow:idempotency:prune`).
 
 Benefits:
 
@@ -169,9 +169,17 @@ Add scheduled tasks to automatically run the package commands. This is needed to
 
 use Illuminate\Support\Facades\Schedule;
 
-Schedule::command('flow:compress')->everyMinute();
-Schedule::command('flow:purge')->everyMinute();
+Schedule::command('flow:compress')->everyMinute()->onOneServer()->withoutOverlapping();
+Schedule::command('flow:purge')->everyMinute()->onOneServer()->withoutOverlapping();
+Schedule::command('flow:idempotency:prune')->daily()->onOneServer();
+
+// Only when config('flow.probes') is populated
+Schedule::command('flow:probe')->everyMinute()->onOneServer();
 ```
+
+`flow:compress` and `flow:purge` stream every eligible status with no limit, and compress uploads an archive per row, so a run on a backlog can easily outlast its own minute — hence `withoutOverlapping()`. `flow:probe` does not need it: it only selects records that have no probe newer than the `grace` cutoff, so a later run cannot repeat an earlier one's work.
+
+`onOneServer()` matters as soon as more than one node runs the scheduler. Two nodes execute the same selection in the same instant and neither sees the other's uncommitted rows, which for `flow:probe` means two outbound polls per record and `grace` no longer limiting anything. It requires a shared cache store that supports locks (`database`, `redis`, `memcached`, `dynamodb`) — with `CACHE_STORE=array` it silently does nothing.
 
 Remember: in production you must have cron that runs `php artisan schedule:run` every minute.
 
@@ -566,6 +574,32 @@ class ExternalDocumentContent extends FlowEndpoint
 ```
 
 The model reaches the endpoint through the constructor — see [Typing the model](#typing-the-model).
+
+#### Timeouts and error responses
+
+`FlowEndpoint` provides defaults for three optional methods, so the example above does not declare them. Override one only when this particular API needs it.
+
+| Method | Default | Override when |
+| --- | --- | --- |
+| `timeout(): int` | `config('flow.endpoint.timeout')`, 30s | the API is genuinely slower or faster |
+| `connectTimeout(): int` | `config('flow.endpoint.connect_timeout')`, 10s | the host is slow to accept connections |
+| `throw(): bool` | `true` | a 4xx body carries a business verdict `processResponse()` must read |
+
+```php
+public function timeout(): int
+{
+    return 90;
+}
+```
+
+Two things `throw(): false` does **not** mean:
+
+- It does not mean "never throws". `throw()` only covers 4xx/5xx responses; a timeout still raises `ConnectionException` from the request itself, and either way an `EXCEPTION` status row is recorded before the exception propagates.
+- It does not change the final status. The response still reaches `setStatusAndSave(status: $this->endpoint->complete(), …)`, so `complete()` here means "the HTTP exchange finished", not "the business outcome was successful". Write the verdict onto the model that owns it — the same split a `ProbeEndpoint` already uses, where the probe completes and the parent receives the verdict.
+
+There is deliberately no retry option on an endpoint. Repeating a state-changing request without an idempotency key is a double charge. Retries belong to the queued listener (`$tries` / `$backoff`), to defibrillation, or — when the verdict comes from outside — to the attempt-and-probe pattern.
+
+Both defaults are read through `config()` with an inline fallback, because `mergeConfigFrom` is skipped while the configuration is cached. An application that ran `config:cache` before upgrading keeps working until the next `config:cache`.
 
 #### Example of using an Endpoint in a listener
 

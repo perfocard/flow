@@ -103,8 +103,15 @@ class PendingEndpoint
 
         try {
             $response = Http::withHeaders($headers)
-                ->send($method, $url, $options)
-                ->throw();
+                ->connectTimeout($this->endpoint->connectTimeout())
+                ->timeout($this->endpoint->timeout())
+                ->send($method, $url, $options);
+
+            // A timeout throws a ConnectionException from send() regardless of
+            // this flag; throw() only covers 4xx/5xx responses.
+            if ($this->endpoint->throw()) {
+                $response->throw();
+            }
         } catch (Throwable $exception) {
             $this->recordException($exception);
 
