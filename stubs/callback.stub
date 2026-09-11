@@ -12,12 +12,19 @@ class {{ class }} extends FlowCallback
     // with fingerprintScope(), fingerprint(), fingerprintLifetime() for dedupe.
 
     /**
+     * The model this callback operates on.
+     */
+    public function __construct(
+        protected {{ modelType }} ${{ modelVar }},
+    ) {}
+
+    /**
      * Return the initial status for the callback.
      *
      * The system will verify this status before processing and will raise an
      * error if the current resource status does not match it.
      */
-    public function initial({{ modelType }} ${{ modelVar }}, Request $request): BackedEnum
+    public function initial(Request $request): BackedEnum
     {
         {{ statusInitial }}
     }
@@ -27,7 +34,7 @@ class {{ class }} extends FlowCallback
      *
      * The system will assign this status to the resource when processing begins.
      */
-    public function processing({{ modelType }} ${{ modelVar }}, Request $request): BackedEnum
+    public function processing(Request $request): BackedEnum
     {
         {{ statusProcessing }}
     }
@@ -37,7 +44,7 @@ class {{ class }} extends FlowCallback
      *
      * The system will assign this status to the resource if processing finishes with an error.
      */
-    public function failed({{ modelType }} ${{ modelVar }}, Request $request): BackedEnum
+    public function failed(Request $request): BackedEnum
     {
         {{ statusError }}
     }
@@ -48,7 +55,7 @@ class {{ class }} extends FlowCallback
      * Define the final status that the system will assign to the resource
      * after successful processing.
      */
-    public function complete({{ modelType }} ${{ modelVar }}, Request $request): BackedEnum
+    public function complete(Request $request): BackedEnum
     {
         {{ statusComplete }}
     }
@@ -56,7 +63,7 @@ class {{ class }} extends FlowCallback
     /**
      * Return the sanitizer class name to use, or null to use default.
      */
-    public function sanitizer({{ modelType }} ${{ modelVar }}, Request $request): ?string
+    public function sanitizer(Request $request): ?string
     {
         return null;
     }
@@ -64,10 +71,10 @@ class {{ class }} extends FlowCallback
     /**
      * Handle the callback logic and return the (possibly modified) model.
      */
-    public function handle({{ modelType }} ${{ modelVar }}, Request $request): {{ modelType }}
+    public function handle(Request $request): {{ modelType }}
     {
         // Handle the callback logic here
 
-        return ${{ modelVar }};
+        return $this->{{ modelVar }};
     }
 }

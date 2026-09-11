@@ -11,9 +11,9 @@ class Idempotency
     /**
      * Build the stored hash from scope and fingerprint material.
      */
-    public static function hash(Idempotent $handler, $model, mixed $source): string
+    public static function hash(Idempotent $handler, mixed $source): string
     {
-        $material = $handler->fingerprintScope()."\0".$handler->fingerprint($model, $source);
+        $material = $handler->fingerprintScope()."\0".$handler->fingerprint($source);
 
         return hash('sha256', $material);
     }
@@ -21,13 +21,13 @@ class Idempotency
     /**
      * Claim an idempotency key. Returns the row on success, null on duplicate.
      */
-    public static function claim(Idempotent $handler, $model, mixed $source): ?IdempotencyKey
+    public static function claim(Idempotent $handler, mixed $source): ?IdempotencyKey
     {
         $modelClass = config('flow.idempotency.model', IdempotencyKey::class);
 
         try {
             return $modelClass::query()->create([
-                'hash' => static::hash($handler, $model, $source),
+                'hash' => static::hash($handler, $source),
                 'expires_at' => now()->addMinutes($handler->fingerprintLifetime()),
             ]);
         } catch (UniqueConstraintViolationException) {

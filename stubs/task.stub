@@ -2,16 +2,22 @@
 
 namespace {{ namespace }};
 
-{{ statusUse }}use Perfocard\Flow\Contracts\BackedEnum;
+{{ modelUse }}{{ statusUse }}use Perfocard\Flow\Contracts\BackedEnum;
 use Perfocard\Flow\Contracts\HandledTask;
-use Perfocard\Flow\Models\FlowModel;
 
 class {{ class }} implements HandledTask
 {
     /**
+     * The model this task operates on.
+     */
+    public function __construct(
+        protected {{ modelType }} ${{ modelVar }},
+    ) {}
+
+    /**
      * Get the status representing the processing state.
      */
-    public function processing(FlowModel $model): BackedEnum
+    public function processing(): BackedEnum
     {
         {{ statusProcessing }}
     }
@@ -19,7 +25,7 @@ class {{ class }} implements HandledTask
     /**
      * Get the status representing the completed state.
      */
-    public function complete(FlowModel $model): BackedEnum
+    public function complete(): BackedEnum
     {
         {{ statusComplete }}
     }
@@ -27,8 +33,10 @@ class {{ class }} implements HandledTask
     /**
      * Execute the task logic.
      */
-    public function handle(FlowModel $model): FlowModel
+    public function handle(): {{ modelType }}
     {
-        return $model;
+        // Handle the task logic here
+
+        return $this->{{ modelVar }};
     }
 }

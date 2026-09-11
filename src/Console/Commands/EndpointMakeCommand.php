@@ -3,11 +3,13 @@
 namespace Perfocard\Flow\Console\Commands;
 
 use Illuminate\Console\GeneratorCommand;
-use Illuminate\Support\Str;
+use Perfocard\Flow\Console\Concerns\ResolvesModelOption;
 use Symfony\Component\Console\Input\InputOption;
 
 class EndpointMakeCommand extends GeneratorCommand
 {
+    use ResolvesModelOption;
+
     /**
      * The console command name.
      *
@@ -85,57 +87,13 @@ class EndpointMakeCommand extends GeneratorCommand
             ];
         }
 
-        $qualifiedModel = $this->qualifyModelClass($model);
-        $statusFqcn = preg_replace('/\\\\([^\\\\]+)$/', '\\\\$1Status', $qualifiedModel);
-        $statusClass = class_basename($statusFqcn);
+        [$statusFqcn, $statusClass] = $this->resolveStatusClass($model);
 
         return [
             'use '.$statusFqcn.";\n",
             'return '.$statusClass.'::PROCESSING;',
             'return '.$statusClass.'::COMPLETE;',
         ];
-    }
-
-    /**
-     * Return model use / type / variable for method signatures.
-     *
-     * @return array{string,string,string}
-     */
-    protected function buildModelReplacements(): array
-    {
-        $model = $this->option('model');
-
-        if (! $model) {
-            return [
-                "use Perfocard\\Flow\\Models\\FlowModel;\n",
-                'FlowModel',
-                'model',
-            ];
-        }
-
-        $qualifiedModel = $this->qualifyModelClass($model);
-        $modelClass = class_basename($qualifiedModel);
-
-        return [
-            'use '.$qualifiedModel.";\n",
-            $modelClass,
-            Str::camel($modelClass),
-        ];
-    }
-
-    /**
-     * Resolve a model option to a fully-qualified class name.
-     */
-    protected function qualifyModelClass(string $model): string
-    {
-        $model = Str::replace('/', '\\', trim($model, '\\'));
-
-        $rootNamespace = $this->laravel->getNamespace();
-        $modelsRoot = is_dir(app_path('Models'))
-            ? $rootNamespace.'Models\\'
-            : $rootNamespace;
-
-        return Str::startsWith($model, $rootNamespace) ? $model : $modelsRoot.$model;
     }
 
     protected function getStub()
@@ -162,7 +120,7 @@ class EndpointMakeCommand extends GeneratorCommand
     /**
      * Get the console command options.
      *
-     * @return array<int, \Symfony\Component\Console\Input\InputOption>
+     * @return array<int, InputOption>
      */
     protected function getOptions()
     {

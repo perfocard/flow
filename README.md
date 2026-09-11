@@ -48,6 +48,7 @@ Use cases:
     - [3.6 Generating an event](#36-generating-an-event)
     - [3.7 Creating a listener](#37-creating-a-listener)
     - [3.8 Using a Task](#38-using-a-task)
+      - [Typing the model](#typing-the-model)
     - [3.9 Using an Endpoint](#39-using-an-endpoint)
       - [Example of using an Endpoint in a listener](#example-of-using-an-endpoint-in-a-listener)
     - [3.10 Using a Callback](#310-using-a-callback)
@@ -403,27 +404,63 @@ Example implementation:
 ```php
 // app/Tasks/DocumentGenerator.php
 
+use App\Models\Document;
 use App\Models\DocumentStatus;
 
 class DocumentGenerator implements HandledTask
 {
-    public function processing(FlowModel $model): BackedEnum
+    public function __construct(
+        protected Document $document,
+    ) {}
+
+    public function processing(): BackedEnum
     {
         return DocumentStatus::PROCESSING;
     }
 
-    public function complete(FlowModel $model): BackedEnum
+    public function complete(): BackedEnum
     {
         return DocumentStatus::COMPLETE;
     }
 
-    public function handle(FlowModel $model): FlowModel
+    public function handle(): Document
     {
-        $model->content = 'Lorem ipsum dolor sit amet.';
-        return $model;
+        $this->document->content = 'Lorem ipsum dolor sit amet.';
+
+        return $this->document;
     }
 }
 ```
+
+#### Typing the model
+
+Tasks, Endpoints and Callbacks all take the model as a **constructor dependency**, typed with the concrete model class. Contract methods never receive it — inside the class the model is `$this->{leaf}`.
+
+```php
+public function __construct(
+    protected Document $document,
+) {}
+```
+
+`Task::for(...)->on($model)->dispatch()` resolves the class through the container and binds the model to the constructor parameter whose type is a `FlowModel` subclass, so remaining dependencies are injected as usual and their order does not matter.
+
+```php
+public function __construct(
+    protected Document $document,
+    protected DocumentRenderer $renderer,
+) {}
+```
+
+Constructors are the only place PHP exempts from signature compatibility checks, which is why the model can be narrowed here while `HandledTask`, `Endpoint` and `Callback` stay strict contracts. Narrowing a **method** parameter is a fatal error even when the contract leaves it untyped:
+
+```
+Fatal error: Declaration of App\Tasks\DocumentGenerator::handle(App\Models\Document $document)
+must be compatible with Perfocard\Flow\Contracts\HandledTask::handle($model)
+```
+
+Handing a handler the wrong model throws `Perfocard\Flow\Exceptions\UnexpectedModelException` before any status is written. Omitting the constructor is allowed — the handler then simply has no access to the model.
+
+`make:task`, `make:endpoint` and `make:callback` scaffold the constructor from `-m`; without it they fall back to `FlowModel $model`.
 
 After creating `DocumentGenerator` you can use it in the listener instead of inline logic. Example:
 
@@ -474,14 +511,18 @@ Example implementation:
 
 namespace App\Endpoints;
 
+use App\Models\Document;
 use App\Models\DocumentStatus;
 use Illuminate\Http\Client\Response;
 use Perfocard\Flow\Contracts\BackedEnum;
 use Perfocard\Flow\FlowEndpoint;
-use Perfocard\Flow\Models\FlowModel;
 
 class ExternalDocumentContent extends FlowEndpoint
 {
+    public function __construct(
+        protected Document $document,
+    ) {}
+
     public function processing(): BackedEnum
     {
         return DocumentStatus::PROCESSING;
@@ -492,20 +533,20 @@ class ExternalDocumentContent extends FlowEndpoint
         return DocumentStatus::COMPLETE;
     }
 
-    public function method(FlowModel $model): string
+    public function method(): string
     {
         return 'POST';
     }
 
-    public function url(FlowModel $model): string
+    public function url(): string
     {
         return 'https://example.com/api/generate';
     }
 
-    public function buildPayload(FlowModel $model): array
+    public function buildPayload(): array
     {
         return [
-            'title' => $model->title,
+            'title' => $this->document->title,
         ];
     }
 
@@ -514,14 +555,16 @@ class ExternalDocumentContent extends FlowEndpoint
         return null;
     }
 
-    public function processResponse(Response $response, FlowModel $model): FlowModel
+    public function processResponse(Response $response): Document
     {
-        $model->content = $response->json('content');
+        $this->document->content = $response->json('content');
 
-        return $model;
+        return $this->document;
     }
 }
 ```
+
+The model reaches the endpoint through the constructor — see [Typing the model](#typing-the-model).
 
 #### Example of using an Endpoint in a listener
 
@@ -574,47 +617,53 @@ Example implementation:
 
 namespace App\Callbacks;
 
+use App\Models\Payment;
 use App\Models\PaymentStatus;
 use Illuminate\Http\Request;
 use Perfocard\Flow\Contracts\BackedEnum;
 use Perfocard\Flow\FlowCallback;
-use Perfocard\Flow\Models\FlowModel;
 
 class PaymentCallback extends FlowCallback
 {
-    public function initial(FlowModel $model, Request $request): BackedEnum
+    public function __construct(
+        protected Payment $payment,
+    ) {}
+
+    public function initial(Request $request): BackedEnum
     {
         return PaymentStatus::PENDING;
     }
 
-    public function processing(FlowModel $model, Request $request): BackedEnum
+    public function processing(Request $request): BackedEnum
     {
         return PaymentStatus::PROCESSING;
     }
 
-    public function failed(FlowModel $model, Request $request): BackedEnum
+    public function failed(Request $request): BackedEnum
     {
         return PaymentStatus::FAILED;
     }
 
-    public function complete(FlowModel $model, Request $request): BackedEnum
+    public function complete(Request $request): BackedEnum
     {
         return PaymentStatus::COMPLETE;
     }
 
-    public function sanitizer(FlowModel $model, Request $request): ?string
+    public function sanitizer(Request $request): ?string
     {
         return null;
     }
 
-    public function handle(FlowModel $model, Request $request): FlowModel
+    public function handle(Request $request): Payment
     {
         // Apply inbound payload to the model
 
-        return $model;
+        return $this->payment;
     }
 }
 ```
+
+`Request` stays a method parameter — only the model moves to the constructor. See [Typing the model](#typing-the-model).
 
 #### Example of using a Callback in a controller
 
@@ -645,7 +694,7 @@ Dispatch asserts the model is still in `initial()`, records the inbound request 
 Opt in with `Perfocard\Flow\Contracts\Idempotent` on the Callback and, for probes, on the `ProbeEndpoint` that writes the parent verdict. Shared methods:
 
 - `fingerprintScope()` — stable provider id (same string on Callback and Probe)
-- `fingerprint($model, $source)` — event identity only (`Request` or `Response`)
+- `fingerprint($source)` — event identity only (`Request` or `Response`); the model is `$this->{leaf}`
 - `fingerprintLifetime()` — minutes until `expires_at` (often `config('flow.idempotency.timeout')`)
 
 Flow stores `sha256(scope + "\0" + fingerprint)` in `idempotency_keys`. `PendingCallback` claims automatically before `initial()`. A duplicate claim soft-returns always (even without `silent()`). On `handle()` failure the claim is released so the provider can retry.
@@ -655,13 +704,13 @@ Probe endpoints must claim explicitly before writing the parent (do not claim on
 ```php
 use Perfocard\Flow\Support\Idempotency;
 
-$claim = Idempotency::claim($this, $probe->payment, $response);
+$claim = Idempotency::claim($this, $response);
 
 if ($claim === null) {
-    return $probe; // duplicate verdict
+    return $this->probe; // duplicate verdict
 }
 
-$probe->payment->setStatusAndSave(status: PaymentStatus::COMPLETE);
+$this->probe->payment->setStatusAndSave(status: PaymentStatus::COMPLETE);
 ```
 
 Prune expired rows:

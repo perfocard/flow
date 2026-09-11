@@ -9,6 +9,7 @@ use Perfocard\Flow\Contracts\Endpoint;
 use Perfocard\Flow\Models\FlowModel;
 use Perfocard\Flow\Models\StatusType;
 use Perfocard\Flow\Support\CurlFormatter;
+use Perfocard\Flow\Support\HandlerResolver;
 use Perfocard\Flow\Support\HttpMessageFormatter;
 use Perfocard\Flow\Support\Sanitizer;
 use RuntimeException;
@@ -22,10 +23,15 @@ class PendingEndpoint
     protected ?FlowModel $model = null;
 
     /**
-     * Create a new PendingEndpoint wrapper for the given endpoint.
+     * The resolved endpoint, built once the model is known.
+     */
+    protected ?Endpoint $endpoint = null;
+
+    /**
+     * Create a new PendingEndpoint wrapper for the given endpoint class.
      */
     public function __construct(
-        protected Endpoint $endpoint,
+        protected string $endpointClass,
     ) {}
 
     /**
@@ -45,7 +51,7 @@ class PendingEndpoint
      * Dispatch the endpoint: build payload, optionally sanitize, record
      * the outgoing request, execute the HTTP call, process and record the response.
      *
-     * @throws \Throwable Rethrows HTTP or processing exceptions
+     * @throws Throwable Rethrows HTTP or processing exceptions
      */
     public function dispatch()
     {
@@ -53,10 +59,12 @@ class PendingEndpoint
             throw new RuntimeException('Model not set for PendingEndpoint');
         }
 
-        $payload = $this->endpoint->buildPayload($this->model);
-        $method = Str::upper($this->endpoint->method($this->model));
-        $url = $this->endpoint->url($this->model);
-        $headers = $this->endpoint->headers($this->model);
+        $this->endpoint = HandlerResolver::resolve($this->endpointClass, $this->model);
+
+        $payload = $this->endpoint->buildPayload();
+        $method = Str::upper($this->endpoint->method());
+        $url = $this->endpoint->url();
+        $headers = $this->endpoint->headers();
 
         // Non-GET requests are sent as JSON; ensure the logged curl matches.
         if ($method !== 'GET' && ! $this->hasHeader($headers, 'Content-Type')) {
@@ -104,7 +112,7 @@ class PendingEndpoint
         }
 
         try {
-            $this->model = $this->endpoint->processResponse($response, $this->model);
+            $this->model = $this->endpoint->processResponse($response);
         } catch (Throwable $exception) {
             $this->recordException($exception);
 

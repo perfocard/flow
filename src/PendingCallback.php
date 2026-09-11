@@ -8,6 +8,7 @@ use Perfocard\Flow\Contracts\Idempotent;
 use Perfocard\Flow\Models\FlowModel;
 use Perfocard\Flow\Models\IdempotencyKey;
 use Perfocard\Flow\Models\StatusType;
+use Perfocard\Flow\Support\HandlerResolver;
 use Perfocard\Flow\Support\HttpMessageFormatter;
 use Perfocard\Flow\Support\Idempotency;
 use Perfocard\Flow\Support\Sanitizer;
@@ -27,15 +28,20 @@ class PendingCallback
     protected ?Request $request = null;
 
     /**
+     * The resolved callback, built once the model is known.
+     */
+    protected ?Callback $callback = null;
+
+    /**
      * Soft-return on invalid initial status instead of throwing.
      */
     protected bool $silent = false;
 
     /**
-     * Create a new PendingCallback wrapper for the given callback.
+     * Create a new PendingCallback wrapper for the given callback class.
      */
     public function __construct(
-        protected Callback $callback,
+        protected string $callbackClass,
     ) {}
 
     /**
@@ -82,8 +88,8 @@ class PendingCallback
      * Dispatch the callback: optional idempotency claim, validate initial status,
      * record processing payload, call the handler, and record result or exception.
      *
-     * @throws \RuntimeException if request or model is missing or status invalid (unless silent)
-     * @throws \Throwable to bubble up any exception from the handler
+     * @throws RuntimeException if request or model is missing or status invalid (unless silent)
+     * @throws Throwable to bubble up any exception from the handler
      */
     public function dispatch()
     {
@@ -95,17 +101,19 @@ class PendingCallback
             throw new RuntimeException('Model not set for PendingCallback');
         }
 
+        $this->callback = HandlerResolver::resolve($this->callbackClass, $this->model);
+
         $claim = null;
 
         if ($this->callback instanceof Idempotent) {
-            $claim = Idempotency::claim($this->callback, $this->model, $this->request);
+            $claim = Idempotency::claim($this->callback, $this->request);
 
             if ($claim === null) {
                 return;
             }
         }
 
-        if ($this->model->status != $this->callback->initial($this->model, $this->request)) {
+        if ($this->model->status != $this->callback->initial($this->request)) {
             if ($claim instanceof IdempotencyKey) {
                 Idempotency::release($claim);
             }
@@ -141,14 +149,14 @@ class PendingCallback
 
         // Mark resource as processing and save the serialized payload
         $this->model->setStatusAndSave(
-            status: $this->callback->processing($this->model, $this->request),
+            status: $this->callback->processing($this->request),
             payload: $payload,
             type: StatusType::CALLBACK,
         );
 
         try {
             // Execute the callback handler
-            $model = $this->callback->handle($this->model, $this->request);
+            $this->model = $this->callback->handle($this->request);
         } catch (Throwable $exception) {
             if ($claim instanceof IdempotencyKey) {
                 Idempotency::release($claim);
@@ -156,7 +164,7 @@ class PendingCallback
 
             // On exception, record error status and exception payload, then rethrow
             $this->model->setStatusAndSave(
-                status: $this->callback->failed($this->model, $this->request),
+                status: $this->callback->failed($this->request),
                 payload: (string) $exception,
                 type: StatusType::EXCEPTION,
             );
@@ -165,8 +173,8 @@ class PendingCallback
         }
 
         // On success, set the final status
-        $model->setStatusAndSave(
-            status: $this->callback->complete($this->model, $this->request),
+        $this->model->setStatusAndSave(
+            status: $this->callback->complete($this->request),
         );
     }
 
@@ -175,7 +183,7 @@ class PendingCallback
      */
     protected function resolveSanitizer(): ?Sanitizer
     {
-        $sanitizerClass = $this->callback->sanitizer($this->model, $this->request);
+        $sanitizerClass = $this->callback->sanitizer($this->request);
 
         if (! $sanitizerClass) {
             return null;

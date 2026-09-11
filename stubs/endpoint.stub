@@ -13,6 +13,13 @@ class {{ class }} extends FlowEndpoint
     // Idempotency::claim() before writing the parent status.
 
     /**
+     * The model this endpoint operates on.
+     */
+    public function __construct(
+        protected {{ modelType }} ${{ modelVar }},
+    ) {}
+
+    /**
      * Get the status representing the processing state.
      */
     public function processing(): BackedEnum
@@ -31,7 +38,7 @@ class {{ class }} extends FlowEndpoint
     /**
      * Determine the HTTP method for the request.
      */
-    public function method({{ modelType }} ${{ modelVar }}): string
+    public function method(): string
     {
         return 'POST';
     }
@@ -39,7 +46,7 @@ class {{ class }} extends FlowEndpoint
     /**
      * Get the URL to which the request should be sent.
      */
-    public function url({{ modelType }} ${{ modelVar }}): string
+    public function url(): string
     {
         return '';
     }
@@ -49,7 +56,7 @@ class {{ class }} extends FlowEndpoint
      *
      * @return array<string, mixed>
      */
-    public function buildPayload({{ modelType }} ${{ modelVar }}): array
+    public function buildPayload(): array
     {
         return [];
     }
@@ -66,10 +73,10 @@ class {{ class }} extends FlowEndpoint
     /**
      * Process the API response and update the model.
      */
-    public function processResponse(Response $response, {{ modelType }} ${{ modelVar }}): {{ modelType }}
+    public function processResponse(Response $response): {{ modelType }}
     {
         // Handle the endpoint logic here
 
-        return ${{ modelVar }};
+        return $this->{{ modelVar }};
     }
 }

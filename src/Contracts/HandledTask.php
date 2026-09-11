@@ -6,9 +6,9 @@ use Perfocard\Flow\Models\FlowModel;
 
 interface HandledTask
 {
-    public function processing(FlowModel $model): BackedEnum;
+    public function processing(): BackedEnum;
 
-    public function complete(FlowModel $model): BackedEnum;
+    public function complete(): BackedEnum;
 
-    public function handle(FlowModel $model): FlowModel;
+    public function handle(): FlowModel;
 }

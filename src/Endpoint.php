@@ -6,8 +6,6 @@ class Endpoint
 {
     public static function for(string $endpointClass): PendingEndpoint
     {
-        $endpoint = app($endpointClass);
-
-        return new PendingEndpoint($endpoint);
+        return new PendingEndpoint($endpointClass);
     }
 }

@@ -3,11 +3,13 @@
 namespace Perfocard\Flow\Console\Commands;
 
 use Illuminate\Console\GeneratorCommand;
-use Illuminate\Support\Str;
+use Perfocard\Flow\Console\Concerns\ResolvesModelOption;
 use Symfony\Component\Console\Input\InputOption;
 
 class TaskMakeCommand extends GeneratorCommand
 {
+    use ResolvesModelOption;
+
     /**
      * The console command name.
      *
@@ -27,7 +29,7 @@ class TaskMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $type = 'Endpoint';
+    protected $type = 'Task';
 
     /**
      * Replace the class name for the given stub.
@@ -42,12 +44,26 @@ class TaskMakeCommand extends GeneratorCommand
 
         $stub = str_replace('{{ class }}', $this->argument('name'), $stub);
 
-        // additional replacements for statuses if -m|--model was provided
         [$statusUse, $statusProcessing, $statusComplete] = $this->buildStatusReplacements();
+        [$modelUse, $modelType, $modelVar] = $this->buildModelReplacements();
 
         $stub = str_replace(
-            ['{{ statusUse }}', '{{ statusProcessing }}', '{{ statusComplete }}'],
-            [$statusUse, $statusProcessing, $statusComplete],
+            [
+                '{{ statusUse }}',
+                '{{ statusProcessing }}',
+                '{{ statusComplete }}',
+                '{{ modelUse }}',
+                '{{ modelType }}',
+                '{{ modelVar }}',
+            ],
+            [
+                $statusUse,
+                $statusProcessing,
+                $statusComplete,
+                $modelUse,
+                $modelType,
+                $modelVar,
+            ],
             $stub
         );
 
@@ -64,35 +80,20 @@ class TaskMakeCommand extends GeneratorCommand
         $model = $this->option('model');
 
         if (! $model) {
-            // if no model provided — remove use and leave TODOs in methods
             return [
-                '', // {{ statusUse }}
+                '',
                 '/* TODO: return YourStatusEnum::PROCESSING; */',
                 '/* TODO: return YourStatusEnum::COMPLETE; */',
             ];
         }
 
-        // Normalize the path (Foo/Bar -> Foo\Bar)
-        $model = Str::replace('/', '\\', trim($model, '\\'));
+        [$statusFqcn, $statusClass] = $this->resolveStatusClass($model);
 
-        // Determine the root namespace for models (App\Models or App\)
-        $rootNamespace = $this->laravel->getNamespace();
-        $modelsRoot = is_dir(app_path('Models'))
-            ? $rootNamespace.'Models\\'
-            : $rootNamespace;
-
-        // If the user already provided a full FQCN — do not prefix
-        $qualifiedModel = Str::startsWith($model, $rootNamespace) ? $model : $modelsRoot.$model;
-
-        // Status class: <LastSegment>Status (Foo\Bar -> Foo\BarStatus)
-        $statusFqcn = preg_replace('/\\\\([^\\\\]+)$/', '\\\\$1Status', $qualifiedModel);
-        $statusClass = class_basename($statusFqcn);
-
-        $statusUse = 'use '.$statusFqcn.";\n";
-        $statusProcessing = 'return '.$statusClass.'::PROCESSING;';
-        $statusComplete = 'return '.$statusClass.'::COMPLETE;';
-
-        return [$statusUse, $statusProcessing, $statusComplete];
+        return [
+            'use '.$statusFqcn.";\n",
+            'return '.$statusClass.'::PROCESSING;',
+            'return '.$statusClass.'::COMPLETE;',
+        ];
     }
 
     protected function getStub()
@@ -119,7 +120,7 @@ class TaskMakeCommand extends GeneratorCommand
     /**
      * Get the console command options.
      *
-     * @return array<int, \Symfony\Component\Console\Input\InputOption>
+     * @return array<int, InputOption>
      */
     protected function getOptions()
     {
