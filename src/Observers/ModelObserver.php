@@ -58,10 +58,28 @@ class ModelObserver
      */
     protected function dispatchEvents(FlowModel $model)
     {
-        if ($model->status instanceof ShouldDispatchEvents) {
-            foreach ($model->status->events() as $event) {
+        if (! ($model->status instanceof ShouldDispatchEvents)) {
+            return;
+        }
+
+        $events = $model->status->events();
+
+        $dispatch = function () use ($model, $events) {
+            foreach ($events as $event) {
                 $event::dispatch($model);
             }
+        };
+
+        $connection = $model->getConnection();
+
+        // Queued listeners must not start before the status row is committed,
+        // or the worker reads the very state this transition replaced.
+        if ($connection->transactionLevel() > 0) {
+            $connection->afterCommit($dispatch);
+
+            return;
         }
+
+        $dispatch();
     }
 }

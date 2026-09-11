@@ -5,6 +5,7 @@ namespace Perfocard\Flow\Nova\Actions;
 use Illuminate\Support\Collection;
 use Laravel\Nova\Actions\Action;
 use Laravel\Nova\Fields\ActionFields;
+use Perfocard\Flow\Exceptions\CannotBeDefibrillatedException;
 use Throwable;
 
 class DefibrillateStatus extends Action
@@ -32,6 +33,8 @@ class DefibrillateStatus extends Action
 
         try {
             $model->defibrillate();
+        } catch (CannotBeDefibrillatedException $e) {
+            return Action::danger(__('This resource cannot be defibrillated.'));
         } catch (Throwable $e) {
             return Action::danger(__('Defibrillation failed.'));
         }

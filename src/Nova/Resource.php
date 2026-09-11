@@ -6,7 +6,6 @@ use Laravel\Nova\Fields\HasMany;
 use Laravel\Nova\Http\Requests\ActionRequest;
 use Laravel\Nova\Resource as NovaResource;
 use Perfocard\Flow\Contracts\ShouldBeCompressed;
-use Perfocard\Flow\Contracts\ShouldBeDefibrillated;
 use Perfocard\Flow\Contracts\ShouldBeTouched;
 use Perfocard\Flow\Contracts\ShouldCollectStatus;
 use Perfocard\Flow\Nova\Actions\CompressResource;
@@ -110,8 +109,7 @@ abstract class Resource extends NovaResource
             return true;
         }
 
-        return $this->resource->status instanceof ShouldBeDefibrillated
-        and $this->resource->status->defibrillate();
+        return $this->resource->canDefibrillate();
     }
 
     private function canBeCompressed($request)

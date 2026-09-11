@@ -61,6 +61,7 @@ Use cases:
     - [4.3 Actions](#43-actions)
       - [Defibrillation](#defibrillation)
       - [Programmatic defibrillation](#programmatic-defibrillation)
+      - [Client defibrillation](#client-defibrillation)
       - [Archiving payloads](#archiving-payloads)
       - [Restoring payloads](#restoring-payloads)
       - [Purging payloads](#purging-payloads)
@@ -790,7 +791,7 @@ The package provides several Nova actions out of the box.
 
 #### Defibrillation
 
-This feature restarts the business process. To use it, implement the `defibrillation` method in your status enum and ensure it implements the `ShouldBeDefibrillated` contract:
+This feature restarts the business process. To use it, implement the `defibrillate` method in your status enum and ensure it implements the `ShouldBeDefibrillated` contract:
 
 ```php
 // app/Models/DocumentStatus.php
@@ -823,6 +824,67 @@ $document = Document::where('status', DocumentStatus::ERROR)->first();
 
 // defibrillate
 $document->defibrillate();
+```
+
+`defibrillate()` throws `CannotBeDefibrillatedException` when the current status maps to `null`, so check first if you are not certain:
+
+```php
+if ($document->canDefibrillate()) {
+    $document->defibrillate();
+}
+```
+
+The status transition runs in a transaction and locks the row, so two concurrent calls cannot dispatch the queued event twice. Status events raised inside a transaction are held until it commits, so a worker never starts on a status the database has not accepted yet — you do not need `after_commit` on the queue connection for this.
+
+#### Client defibrillation
+
+Nova covers the administrator. To let the end user restart their own failed process, the package registers one route:
+
+```
+POST /flow/defibrillations/{type}/{model}    flow.defibrillations.store
+```
+
+`{type}` is the model's morph alias and `{model}` is its key. Register a morph map so the URL carries a stable alias instead of the fully qualified class name.
+
+The route is closed by default. Every model must say who may defibrillate it by overriding `canBeDefibrillatedBy()`, otherwise the endpoint answers `403`:
+
+```php
+// app/Models/Document.php
+
+use Illuminate\Contracts\Auth\Authenticatable;
+
+class Document extends BaseModel implements ShouldCollectStatus
+{
+    public function canBeDefibrillatedBy(?Authenticatable $user): bool
+    {
+        return $user !== null && $this->user_id === $user->getAuthIdentifier();
+    }
+}
+```
+
+Nova never consults this method — there the gate is a policy, so an administrator keeps the ability to revive somebody else's process.
+
+Do not build the URL on the client. Ask the model for it, because one call answers both whether the restart is technically possible and whether this user is allowed to trigger it:
+
+```php
+$document->defibrillationUrl();          // for the signed-in user
+$document->defibrillationUrl($someUser); // for a specific one
+```
+
+It returns `null` when the route is disabled, when `canDefibrillate()` is false, or when the user is not allowed — so passing it into a resource or Inertia prop gives the frontend a single flag to render the retry button from:
+
+```php
+'defibrillate_url' => $document->defibrillationUrl(),
+```
+
+The route responds with a redirect back for regular requests and with JSON when the request expects it. Configure the surface under `defibrillation` in `config/flow.php`:
+
+```php
+'defibrillation' => [
+    'enabled' => env('FLOW_DEFIBRILLATION_ENABLED', true),
+    'prefix' => 'flow/defibrillations',
+    'middleware' => ['web', 'auth', 'throttle:6,1'],
+],
 ```
 
 #### Archiving payloads

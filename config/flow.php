@@ -64,6 +64,26 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Defibrillation Configuration
+    |--------------------------------------------------------------------------
+    |
+    | The client surface that restarts a failed process. Nova has its own
+    | action and ignores these settings. A model stays unreachable here until
+    | it overrides canBeDefibrillatedBy(), so 'enabled' only removes the route.
+    */
+    'defibrillation' => [
+        // Register the client route
+        'enabled' => env('FLOW_DEFIBRILLATION_ENABLED', true),
+
+        // URL prefix for the client route
+        'prefix' => 'flow/defibrillations',
+
+        // Middleware applied to the client route
+        'middleware' => ['web', 'auth', 'throttle:6,1'],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Idempotency Configuration
     |--------------------------------------------------------------------------
     |

@@ -30,6 +30,10 @@ class FlowServiceProvider extends ServiceProvider
         $this->loadJsonTranslationsFrom(__DIR__.'/../lang');
         $this->loadJsonTranslationsFrom(lang_path('vendor/flow'));
 
+        if (config('flow.defibrillation.enabled')) {
+            $this->loadRoutesFrom(__DIR__.'/../routes/flow.php');
+        }
+
         if ($this->app->runningInConsole()) {
             $this->publishes([
                 __DIR__.'/../config/flow.php' => config_path('flow.php'),

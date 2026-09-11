@@ -3,7 +3,7 @@
 namespace Perfocard\Flow\Contracts;
 
 /**
- * Contract for models that support defibrillation of status.
+ * Contract for status enums that dispatch their events again on touch.
  */
 interface ShouldBeTouched
 {
