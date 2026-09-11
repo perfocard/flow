@@ -2,4 +2,8 @@
 
 namespace Perfocard\Flow\Contracts;
 
-interface BackedEnum extends \Illuminate\Contracts\Support\Arrayable, \Illuminate\Contracts\Support\Htmlable, \Illuminate\Contracts\Support\Jsonable {}
+use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Contracts\Support\Jsonable;
+
+interface BackedEnum extends \BackedEnum, Arrayable, Htmlable, Jsonable {}

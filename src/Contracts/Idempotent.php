@@ -27,7 +27,7 @@ interface Idempotent
      * A hit resolving to any other case is processed and logged as usual,
      * without a fingerprint claim.
      *
-     * @return array<int, \BackedEnum>
+     * @return array<int, BackedEnum>
      */
     public function guarded(): array;
 }

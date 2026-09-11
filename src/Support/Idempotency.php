@@ -2,8 +2,8 @@
 
 namespace Perfocard\Flow\Support;
 
-use BackedEnum;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Perfocard\Flow\Contracts\BackedEnum;
 use Perfocard\Flow\Contracts\Idempotent;
 use Perfocard\Flow\Models\IdempotencyKey;
 

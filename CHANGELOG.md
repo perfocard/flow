@@ -2,6 +2,12 @@
 
 All notable changes to `perfocard/flow` are documented here.
 
+## 1.5.1
+
+### Fixed
+
+- `Contracts\BackedEnum` now extends native `\BackedEnum`, and `Idempotency` types status parameters as the Flow contract instead of the native interface. Stops static-analysis false positives when `PendingCallback` passes `Callback::complete()` into `Idempotency::guards()` / `claim()`.
+
 ## 1.5.0
 
 ### Added
