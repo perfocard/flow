@@ -2,6 +2,12 @@
 
 All notable changes to `perfocard/flow` are documented here.
 
+## 1.5.2
+
+### Changed
+
+- The published status stub implements `HasComponent`, so clients can read `is_loading` / `is_failed` from a status without a lookup table.
+
 ## 1.5.1
 
 ### Fixed
