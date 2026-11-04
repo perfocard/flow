@@ -8,6 +8,7 @@ use Laravel\Nova\Resource as NovaResource;
 use Perfocard\Flow\Contracts\ShouldBeCompressed;
 use Perfocard\Flow\Contracts\ShouldBeTouched;
 use Perfocard\Flow\Contracts\ShouldCollectStatus;
+use Perfocard\Flow\Models\FlowModel;
 use Perfocard\Flow\Nova\Actions\CompressResource;
 use Perfocard\Flow\Nova\Actions\DefibrillateStatus;
 use Perfocard\Flow\Nova\Actions\ExtractResource;
@@ -109,7 +110,8 @@ abstract class Resource extends NovaResource
             return true;
         }
 
-        return $this->resource->canDefibrillate();
+        return $this->resource instanceof FlowModel
+            && $this->resource->canDefibrillate();
     }
 
     private function canBeCompressed($request)

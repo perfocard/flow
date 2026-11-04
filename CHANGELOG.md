@@ -2,6 +2,12 @@
 
 All notable changes to `perfocard/flow` are documented here.
 
+## 1.5.3
+
+### Fixed
+
+- The Nova `DefibrillateStatus` action no longer throws `Call to undefined method …::canDefibrillate()` on resources whose model is not a `FlowModel` (the auth `User` extends `Authenticatable`). The action is hidden for them instead.
+
 ## 1.5.2
 
 ### Changed
